@@ -16,9 +16,17 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // 这里应该调用实际的登录 API
-      // 模拟登录成功
-      router.push('/');
+      const resp = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (resp.status === 200) {
+        router.push('/');
+      } else {
+        const errorData = await resp.json();
+        setError(errorData.message || '登录失败，请检查邮箱和密码');
+      }
     } catch (err) {
       setError('登录失败，请检查邮箱和密码');
     }
