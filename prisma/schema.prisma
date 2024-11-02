@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
 }
 
@@ -55,12 +55,12 @@ model post_invite_user {
 
 model reply {
   id         Int       @id @default(autoincrement())
-  content    String?   @db.VarChar(2000)
+  content    String    @db.VarChar(2000)
   created_at DateTime? @db.Timestamp(6)
   post_id    Int
-  user_id    Int?
+  user_id    Int
   post       post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
-  user       user?     @relation(fields: [user_id], references: [id])
+  user       user      @relation(fields: [user_id], references: [id])
 }
 
 model tag {
@@ -87,12 +87,14 @@ model user {
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
   user_type_id       Int                  @default(1)
+  avatar             String?              @db.VarChar(255)
   announcement       announcement[]
   post               post[]
   post_assigned_user post_assigned_user[]
   post_invite_user   post_invite_user[]
   reply              reply[]
   tag_user           tag_user?
+  sessions           session[]
   user_types         user_types           @relation(fields: [user_type_id], references: [id], onDelete: NoAction)
 }
 
@@ -100,4 +102,12 @@ model user_types {
   id   Int    @id @default(autoincrement())
   name String @unique @db.VarChar(255)
   user user[]
+}
+
+model session {
+  id        String   @id
+  userId    Int
+  expiresAt DateTime
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

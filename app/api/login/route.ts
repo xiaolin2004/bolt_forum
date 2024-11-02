@@ -1,3 +1,4 @@
+import { createSession, setSessionTokenCookie,generateSessionToken } from "@/app/lib/session";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
 
@@ -23,8 +24,14 @@ if (user.password !== password) {
         headers: { "Content-Type": "application/json" },
     });
 }
+const token = generateSessionToken();
+const session = await createSession(token, user.id);
+await setSessionTokenCookie(token, session.expiresAt);
+
 return new Response(JSON.stringify({ message: "Logged in" }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
 });
 }
+
+

@@ -1,9 +1,9 @@
 "use client";
 import { useState } from 'react';
-import UserCard from './UserCard';
 import Link from 'next/link';
 
 export default function Sidebar() {
+  // have to be client-side
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
@@ -36,7 +36,7 @@ export default function Sidebar() {
           </Link>
         ))}
       </nav>
-      {!isCollapsed && <UserCard />}
+      {!isCollapsed}
     </div>
   );
 }

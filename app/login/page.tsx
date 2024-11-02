@@ -1,10 +1,9 @@
 "use client";
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,7 +21,7 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
       if (resp.status === 200) {
-        router.push('/');
+        redirect('/');
       } else {
         const errorData = await resp.json();
         setError(errorData.message || '登录失败，请检查邮箱和密码');

@@ -1,29 +1,12 @@
 "use client";
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import {ListPost} from '@/app/types/post';
 
-interface Post {
-  id: number;
-  title: string;
-  author: string;
-  replies: number;
-  views: number;
-  lastReply: string;
-}
 
-export default function PostList() {
-  const router = useRouter();
+export default function PostList({posts}:{posts:ListPost[]}) {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 10;
-
-  const posts: Post[] = Array.from({ length: 30 }, (_, i) => ({
-    id: i + 1,
-    title: `这是一个示例帖子标题 ${i + 1}`,
-    author: `用户${i + 1}`,
-    replies: Math.floor(Math.random() * 100),
-    views: Math.floor(Math.random() * 1000),
-    lastReply: '2023-10-01',
-  }));
 
   const totalPages = Math.ceil(posts.length / postsPerPage);
   const currentPosts = posts.slice(
@@ -32,7 +15,7 @@ export default function PostList() {
   );
 
   const handlePostClick = (postId: number) => {
-    router.push(`/post/${postId}`);
+    redirect(`/post/${postId}`);
   };
 
   return (
@@ -50,7 +33,6 @@ export default function PostList() {
               </h3>
               <div className="text-sm text-gray-500">
                 <span className="mr-4">回复: {post.replies}</span>
-                <span>浏览: {post.views}</span>
               </div>
             </div>
             <div className="mt-2 text-sm text-gray-500 flex justify-between">

@@ -1,10 +1,9 @@
 "use client";
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,7 +17,7 @@ export default function RegisterPage() {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('两次输入的密码不一致');
+      setError('两次输入的密码��一致');
       return;
     }
 
@@ -29,8 +28,8 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       });
       if (resp.status === 200) {
-        router.push('/login');
-      }else{
+        redirect('/login');
+      } else {
         const errorData = await resp.json();
         setError(errorData.message || '注册失败，请稍后重试');
       }

@@ -1,13 +1,12 @@
 import { Post, Reply } from "@/app/types/post";
-import PostDetail from "../component/post-detail";
-import { PrismaClient } from "@prisma/client";
+import PostDetail from "@/app/post/component/post-detail";
+import {prisma} from "@/prisma/client";
 export default async function Page({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const id = Number((await params).id);
-  const prisma = new PrismaClient();
   const post = await prisma.post.findUnique({
     where: {
       id: id,

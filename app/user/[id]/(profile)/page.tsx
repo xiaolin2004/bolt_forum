@@ -1,6 +1,6 @@
-"use client";
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Image from 'next/image';
+import { getCurrentSession } from '@/app/lib/session';
 
 interface UserProfile {
   name: string;
@@ -10,11 +10,14 @@ interface UserProfile {
   tags: string[];
 }
 
-export default function ProfilePage() {
-  const router = useRouter();
+export default async function ProfilePage() {
+  const { user } =await getCurrentSession();
+  if (user == null){
+    return redirect('/login');
+  }
   
   // 模拟用户数据，实际应用中应从 API 获取
-  const user: UserProfile = {
+  const user1: UserProfile = {
     name: '示例用户',
     email: 'example@email.com',
     phone: '13800138000',
@@ -28,16 +31,16 @@ export default function ProfilePage() {
         <div className="flex items-center space-x-6 mb-8">
           <div className="relative w-24 h-24 rounded-full overflow-hidden">
             <Image
-              src={user.avatar}
+              src={user1.avatar}
               alt="用户头像"
               fill
               className="object-cover"
             />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{user.name}</h1>
+            <h1 className="text-2xl font-bold">{user1.name}</h1>
             <button
-              onClick={() => router.push('/user/profile/edit')}
+              onClick={() => redirect('/user/[id]/profile/edit')}
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
               编辑资料
@@ -63,7 +66,7 @@ export default function ProfilePage() {
           <div>
             <h2 className="text-lg font-semibold mb-2">个人标签</h2>
             <div className="flex flex-wrap gap-2">
-              {user.tags.map((tag) => (
+              {user1.tags.map((tag) => (
                 <span
                   key={tag}
                   className="px-3 py-1 bg-gray-100 rounded-full text-sm"

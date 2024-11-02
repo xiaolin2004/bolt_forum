@@ -1,23 +1,12 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Invitation } from '../types/invitation';
 
-interface Invitation {
-  id: string;
-  postId: string;
-  postTitle: string;
-  inviter: {
-    name: string;
-    avatar: string;
-  };
-  timestamp: string;
-  status: 'pending' | 'accepted' | 'declined';
-}
 
 export default function InvitationsPage() {
-  const router = useRouter();
   const [invitations, setInvitations] = useState<Invitation[]>([
     {
       id: '1',
@@ -58,7 +47,7 @@ export default function InvitationsPage() {
       if (accept) {
         const invitation = invitations.find(inv => inv.id === invitationId);
         if (invitation) {
-          router.push(`/post/${invitation.postId}`);
+          redirect(`/post/${invitation.postId}`);
         }
       }
     } catch (error) {

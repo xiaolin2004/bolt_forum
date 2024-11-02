@@ -1,37 +1,16 @@
 "use client";
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { redirect } from "next/navigation";
+import Image from "next/image";
+import { cardUser as User } from "../types/user";
+import { logOut } from "../action/User";
 
-interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  isLoggedIn: boolean;
-}
-
-export default function UserCard() {
-  const router = useRouter();
-  
-  // 模拟用户状态，实际应用中应该从认证系统获取
-  const user: User = {
-    id: '1',
-    name: '示例用户',
-    avatar: '/default-avatar.png',
-    isLoggedIn: false // 修改为默认未登录状态
-  };
-
+export default function UserCard({ user }: { user: User }) {
   const handleClick = () => {
     if (user.isLoggedIn) {
-      router.push('/user/profile');
+      redirect("/user/profile");
     } else {
-      router.push('/login');
+      redirect("/login");
     }
-  };
-
-  const handleLogout = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // 实际应用中这里需要调用登出 API
-    router.push('/login');
   };
 
   return (
@@ -53,7 +32,7 @@ export default function UserCard() {
             <>
               <p className="font-medium">{user.name}</p>
               <button
-                onClick={handleLogout}
+                formAction={logOut}
                 className="text-sm text-red-500 hover:text-red-600"
               >
                 退出登录
