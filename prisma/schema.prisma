@@ -65,7 +65,7 @@ model reply {
 
 model tag {
   id       Int        @id @default(autoincrement())
-  feature  String     @db.VarChar(255)
+  feature  String     @unique(map: "tag_unique") @db.VarChar(255)
   tag_user tag_user[]
 }
 
@@ -93,8 +93,8 @@ model user {
   post_assigned_user post_assigned_user[]
   post_invite_user   post_invite_user[]
   reply              reply[]
-  tag_user           tag_user?
   sessions           session[]
+  tag_user           tag_user?
   user_types         user_types           @relation(fields: [user_type_id], references: [id], onDelete: NoAction)
 }
 
@@ -108,6 +108,5 @@ model session {
   id        String   @id
   userId    Int
   expiresAt DateTime
-
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

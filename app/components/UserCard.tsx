@@ -7,7 +7,7 @@ import { logOut } from "../action/User";
 export default function UserCard({ user }: { user: User }) {
   const handleClick = () => {
     if (user.isLoggedIn) {
-      redirect("/user/profile");
+      redirect(`/user/${user.id?.toString()}`);
     } else {
       redirect("/login");
     }
