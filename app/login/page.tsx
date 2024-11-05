@@ -8,7 +8,7 @@ import Link from "next/link";
 import { logIn } from "../action/User";
 
 const initialState = {
-  meseage: "",
+  message: "",
 };
 
 function LoginButton() {
@@ -36,9 +36,9 @@ export default function LoginPage() {
           </h2>
         </div>
         <form action={formAction} className="mt-8 space-y-6">
-          {state?.meseage && (
+          {state.message!="" && (
             <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
-              {state?.meseage}
+              {state.message}
             </div>
           )}
           <div className="rounded-md shadow-sm space-y-4">

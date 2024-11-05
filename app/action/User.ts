@@ -10,7 +10,6 @@ import { cardUser, UserProfile } from "../types/user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "./client";
 import { redirect } from "next/navigation";
-import { error } from "console";
 
 export async function getCardUser(): Promise<cardUser> {
   const session = await getCurrentSession();
