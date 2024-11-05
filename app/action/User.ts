@@ -40,7 +40,7 @@ export async function getCardUser(): Promise<cardUser> {
   return ex_user;
 }
 
-export async function logOut() {
+export async function Logout() {
   await deleteSessionTokenCookie();
   revalidatePath("/");
 }
@@ -73,7 +73,35 @@ export async function logIn(
   redirect("/");
 }
 
-export async function Register() {}
+export async function Register(prevState: { message: string },formData:FormData) {
+  const rawFormData = {
+    name: formData.get("name")?.toString().trim(),
+    email: formData.get("email")?.toString().trim(),
+    password: formData.get("password")?.toString().trim(),
+    confirmPassword: formData.get("confirmPassword")?.toString().trim(),
+  }
+  const user  = await prisma.user.count({
+    where:{
+      email:rawFormData.email
+    },
+  });
+  if(user>0){
+    return {message:"User already exists"};
+  }
+  if(rawFormData.password !== rawFormData.confirmPassword){
+    return {message:"Password mismatch"};
+  }
+  await prisma.user.create({
+    data:{
+      name:rawFormData.name??"",
+      email:rawFormData.email??"",
+      password:rawFormData.password??"",
+      created_at:new Date(),
+      updated_at:new Date(),
+    },
+  });
+  redirect("/login");
+}
 
 export async function updateProfile(userId: number, formData: FormData) {
   const session = await getCurrentSession();

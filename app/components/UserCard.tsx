@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { cardUser as User } from "../types/user";
-import { logOut } from "../action/User";
+import { Logout } from "../action/User";
 
 export default function UserCard({ user }: { user: User }) {
   const handleClick = () => {
@@ -32,7 +32,7 @@ export default function UserCard({ user }: { user: User }) {
             <>
               <p className="font-medium">{user.name}</p>
               <button
-                onClick={logOut} // 修改此行
+                onClick={Logout}
                 className="text-sm text-red-500 hover:text-red-600"
               >
                 退出登录

@@ -1,8 +1,27 @@
 "use client";
-import { useState } from 'react';
-import { redirect } from 'next/navigation';
+// @ts-expect-error
+import { useActionState, useState } from "react";
+// @ts-expect-error
+import { useFormStatus } from "react-dom";
 import Link from 'next/link';
+import { Register } from '../action/User';
 
+function RegisterButton(){
+  const {pending} = useFormStatus();
+  return (
+    <button
+      type="submit"
+      aria-disabled={pending}
+      className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      注册
+    </button>
+  );
+}
+
+const initialState = {
+  message:""
+}
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -10,33 +29,9 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
+  const [state, formAction] = useActionState(Register, initialState);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('两次输入的密码��一致');
-      return;
-    }
-
-    try {
-      const resp = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (resp.status === 200) {
-        redirect('/login');
-      } else {
-        const errorData = await resp.json();
-        setError(errorData.message || '注册失败，请稍后重试');
-      }
-    } catch (err) {
-      setError('注册失败，请稍后重试');
-    }
-  };
+  
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -46,10 +41,10 @@ export default function RegisterPage() {
             创建新账户
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
+        <form className="mt-8 space-y-6" action={formAction}>
+          {state.message!="" && (
             <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
-              {error}
+              {state.message}
             </div>
           )}
           <div className="rounded-md shadow-sm space-y-4">
@@ -118,12 +113,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              注册
-            </button>
+            <RegisterButton />
           </div>
 
           <div className="text-sm text-center">
