@@ -4,6 +4,7 @@ import { deleteSessionTokenCookie, getCurrentSession } from "../lib/session";
 import { cardUser, UserProfile } from "../types/user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "./client";
+import { redirect } from "next/navigation";
 
 export async function getCardUser(): Promise<cardUser> {
   const session = await getCurrentSession();
@@ -16,7 +17,6 @@ export async function getCardUser(): Promise<cardUser> {
     };
     return user;
   }
-  const prisma = new PrismaClient();
   const user = await prisma.user.findUnique({
     where: {
       id: session.user?.id,
@@ -44,12 +44,44 @@ export async function logIn() {}
 
 export async function Register() {}
 
-export async function updateProfile() {}
+export async function updateProfile(userId: number, formData: FormData) {
+  const session = await getCurrentSession();
+  if (session == null) {
+    return;
+  }
+  if(session.user?.id!=userId){
+    return;
+  }
+  const user = session.user;
+  const rawFormData = {
+    name: formData.get("name")?.toString().trim() ?? user?.name,
+    phone: formData.get("phone")?.toString().trim() ?? user?.phone,
+    tags: formData.getAll("tags"),
+  };
+  const uuser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      name: rawFormData.name,
+      phone: rawFormData.phone,
+    },
+  });
+  revalidatePath(`/user/${user.id.toString()}`);
+  redirect(`/user/${user.id.toString()}`);
+}
 
 export async function getProfileUser(id: number) {
   const user = await prisma.user.findUnique({
     where: {
       id: id,
+    },
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      email: true,
+      phone: true,
     },
   });
   if (user == null) {
@@ -80,8 +112,6 @@ export async function getProfileUser(id: number) {
     email: user.email,
     phone: user.phone ?? "",
     tags: tags,
-    createdAt: user.created_at.toISOString(),
-    updatedAt: user.updated_at.toISOString(),
   };
   return r_user;
 }

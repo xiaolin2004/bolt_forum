@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import { getCurrentSession } from "@/app/lib/session";
 import { getProfileUser } from "@/app/action/User";
+import EditButton from "./components/edit-botton";
 
 export default async function ProfilePage({
   params,
@@ -34,9 +35,7 @@ export default async function ProfilePage({
           <div>
             <h1 className="text-2xl font-bold">{v_user?.name}</h1>
             {user.id === user_id && (
-              <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                编辑资料
-              </button>
+              <EditButton user_id={user_id} />
             )}
           </div>
         </div>

@@ -12,6 +12,4 @@ export type UserProfile = {
   email: string;
   phone: string;
   tags: string[];
-  createdAt: string;
-  updatedAt: string;
 }
