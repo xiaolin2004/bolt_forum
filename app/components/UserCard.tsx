@@ -32,7 +32,7 @@ export default function UserCard({ user }: { user: User }) {
             <>
               <p className="font-medium">{user.name}</p>
               <button
-                formAction={logOut}
+                onClick={logOut} // 修改此行
                 className="text-sm text-red-500 hover:text-red-600"
               >
                 退出登录

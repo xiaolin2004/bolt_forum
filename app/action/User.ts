@@ -1,14 +1,20 @@
 "use server";
-import { PrismaClient } from "@prisma/client";
-import { deleteSessionTokenCookie, getCurrentSession } from "../lib/session";
+import {
+  deleteSessionTokenCookie,
+  getCurrentSession,
+  generateSessionToken,
+  createSession,
+  setSessionTokenCookie,
+} from "../lib/session";
 import { cardUser, UserProfile } from "../types/user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "./client";
 import { redirect } from "next/navigation";
+import { error } from "console";
 
 export async function getCardUser(): Promise<cardUser> {
   const session = await getCurrentSession();
-  if (!session) {
+  if (session.session == null) {
     const user: cardUser = {
       id: undefined,
       name: "",
@@ -40,7 +46,33 @@ export async function logOut() {
   revalidatePath("/");
 }
 
-export async function logIn() {}
+export async function logIn(
+  prevState: {
+    message: string;
+  },
+  formData: FormData
+) {
+  const rawFormData = {
+    email: formData.get("email")?.toString().trim(),
+    password: formData.get("password")?.toString().trim(),
+  };
+  const user = await prisma.user.findUnique({
+    where: {
+      email: rawFormData.email,
+    },
+  });
+  if (user == null) {
+    return { message: `Email ${rawFormData.email} not found` };
+  }
+  if (user.password !== rawFormData.password) {
+    return { message: "Incorrect password" };
+  }
+  const token = generateSessionToken();
+  const session = await createSession(token, user.id);
+  await setSessionTokenCookie(token, session.expiresAt);
+  revalidatePath("/");
+  redirect("/");
+}
 
 export async function Register() {}
 
@@ -49,7 +81,7 @@ export async function updateProfile(userId: number, formData: FormData) {
   if (session == null) {
     return;
   }
-  if(session.user?.id!=userId){
+  if (session.user?.id != userId) {
     return;
   }
   const user = session.user;
