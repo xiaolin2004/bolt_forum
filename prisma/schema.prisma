@@ -9,11 +9,13 @@ datasource db {
 }
 
 model announcement {
-  id      Int    @id @default(autoincrement())
-  title   String @db.VarChar(255)
-  content String @db.VarChar(4000)
-  author  Int
-  user    user   @relation(fields: [author], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  content    String   @db.VarChar(4000)
+  author     Int
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  user       user     @relation(fields: [author], references: [id], onDelete: Cascade)
 }
 
 model invitation_status {

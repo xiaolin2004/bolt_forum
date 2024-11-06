@@ -1,14 +1,11 @@
 "use client";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BriefAnnouncement } from '../types/announcement';
 
-export default function Announcement() {
+export default function Announcement({announcements}:{announcements:BriefAnnouncement[]}) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const announcements = [
-    { title: '社区规范更新', date: '2023-10-01' },
-    { title: '新功能上线公告', date: '2023-09-30' },
-    { title: '每周优质内容推荐', date: '2023-09-29' },
-  ];
+  const router = useRouter();
 
   return (
     <div className={`bg-white shadow-lg transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
@@ -23,7 +20,12 @@ export default function Announcement() {
         <div className="p-4">
           {announcements.map((announcement) => (
             <div key={announcement.title} className="mb-4 pb-2 border-b">
-              <h3 className="font-medium">{announcement.title}</h3>
+              <h3 
+                className="font-medium cursor-pointer text-blue-500 hover:underline"
+                onClick={() => router.push(`/announcement/${announcement.id}`)}
+              >
+                {announcement.title}
+              </h3>
               <p className="text-sm text-gray-500">{announcement.date}</p>
             </div>
           ))}
