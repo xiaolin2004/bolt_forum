@@ -1,21 +1,36 @@
-"use client";
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { get } from "http";
+import Link from "next/link";
+import { getCurrentSession } from "../lib/session";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({
+
+function ReturnHome() {
+  return (
+    <Link
+    href={"/"}
+      className="text-gray-500 hover:text-gray-700"
+    >
+      返回前台
+    </Link>
+  );
+}
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // const router = useRouter();
-  const pathname = usePathname();
-
+  const session =await getCurrentSession();
+  if (session == null) {
+    redirect("/login");
+  }
+  if(session.user?.user_type_id!=2){
+    redirect("/");
+  }
   const menuItems = [
-    { path: '/admin', label: '控制台', icon: '📊' },
-    { path: '/admin/users', label: '用户管理', icon: '👥' },
-    { path: '/admin/posts', label: '帖子管理', icon: '📝' },
-    { path: '/admin/announcements', label: '公告管理', icon: '📢' },
+    { path: "/admin", label: "控制台", icon: "📊" },
+    { path: "/admin/users", label: "用户管理", icon: "👥" },
+    { path: "/admin/posts", label: "帖子管理", icon: "📝" },
+    { path: "/admin/announcements", label: "公告管理", icon: "📢" },
   ];
 
   return (
@@ -32,11 +47,9 @@ export default function AdminLayout({
                   <Link
                     key={item.path}
                     href={item.path}
-                    className={`${
-                      pathname === item.path
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                    className={
+                      "border-transparent text-gray-900 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    }
                   >
                     <span className="mr-2">{item.icon}</span>
                     {item.label}
@@ -45,12 +58,7 @@ export default function AdminLayout({
               </div>
             </div>
             <div className="flex items-center">
-              <button
-                onClick={() => redirect('/')}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                返回前台
-              </button>
+              <ReturnHome />
             </div>
           </div>
         </div>

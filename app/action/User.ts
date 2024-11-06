@@ -41,8 +41,8 @@ export async function getCardUser(): Promise<cardUser> {
 }
 
 export async function Logout() {
-  await deleteSessionTokenCookie();
-  revalidatePath("/");
+  const nu = await deleteSessionTokenCookie();
+  revalidatePath("/login");
 }
 
 export async function logIn(

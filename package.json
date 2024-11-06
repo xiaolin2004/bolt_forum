@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nextui-org/breadcrumbs": "^2.0.13",
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
     "@prisma/client": "^5.21.1",
@@ -22,7 +23,7 @@
     "postcss": "^8.4.47",
     "react": "experimental",
     "react-dom": "experimental",
-    "tailwindcss": "3.3.3",
+    "tailwindcss": "^3.4.14",
     "typescript": "5.2.2"
   },
   "devDependencies": {

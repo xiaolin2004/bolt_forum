@@ -4,6 +4,17 @@ import Image from "next/image";
 import { cardUser as User } from "../types/user";
 import { Logout } from "../action/User";
 
+
+function LogoutButton(){
+  return (
+    <button
+      onClick={Logout}
+      className="text-lg text-red-500 hover:text-red-600 py-2 px-4 border border-red-500 rounded"
+    >
+      退出登录
+    </button>
+  );
+}
 export default function UserCard({ user }: { user: User }) {
   const handleClick = () => {
     if (user.isLoggedIn) {
@@ -31,12 +42,6 @@ export default function UserCard({ user }: { user: User }) {
           {user.isLoggedIn ? (
             <>
               <p className="font-medium">{user.name}</p>
-              <button
-                onClick={Logout}
-                className="text-sm text-red-500 hover:text-red-600"
-              >
-                退出登录
-              </button>
             </>
           ) : (
             <p className="text-blue-500 hover:text-blue-600">点击登录</p>

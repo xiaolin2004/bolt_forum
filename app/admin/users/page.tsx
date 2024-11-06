@@ -1,14 +1,7 @@
 "use client";
 import { useState } from 'react';
+import { User } from '@/app/types/user';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-  joinDate: string;
-}
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([

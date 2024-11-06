@@ -1,6 +1,6 @@
-import Link from 'next/link';
 
 export default function AdminDashboard() {
+  // 统计数据
   const stats = [
     { label: '总用户数', value: '1,234', icon: '👥' },
     { label: '总帖子数', value: '5,678', icon: '📝' },
@@ -10,6 +10,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* 统计数据展示 */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((item) => (
           <div
@@ -37,7 +38,9 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      {/* 最近活动和系统通知 */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {/* 最近活动 */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -61,6 +64,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* 系统通知 */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <h3 className="text-lg leading-6 font-medium text-gray-900">

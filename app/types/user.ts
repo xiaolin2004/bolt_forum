@@ -13,3 +13,12 @@ export type UserProfile = {
   phone: string;
   tags: string[];
 }
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  joinDate: string;
+}
