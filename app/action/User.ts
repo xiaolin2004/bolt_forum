@@ -8,7 +8,7 @@ import {
 } from "../lib/session";
 import { cardUser, UserProfile } from "../types/user";
 import { revalidatePath } from "next/cache";
-import { prisma } from "./client";
+import { prisma } from "@/prisma/client";
 import { redirect } from "next/navigation";
 
 export async function getCardUser(): Promise<cardUser> {

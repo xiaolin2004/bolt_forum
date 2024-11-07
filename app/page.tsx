@@ -10,11 +10,10 @@ import { getAnnouncement } from "./action/Announcement";
 import { Logout } from "./action/User";
 
 
-function LogoutButton() {
-
+async function LogoutButton() {
   return (
     <button
-      onClick={Logout}
+      onClick={await Logout}
       className="text-lg text-red-500 hover:text-red-600 py-2 px-4 border border-red-500 rounded"
     >
       退出登录
