@@ -6,7 +6,7 @@ import {
   createSession,
   setSessionTokenCookie,
 } from "../lib/session";
-import { cardUser, UserProfile } from "../types/user";
+import { cardUser, UserProfile, ListUser } from "../types/user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/prisma/client";
 import { redirect } from "next/navigation";
@@ -73,31 +73,34 @@ export async function logIn(
   redirect("/");
 }
 
-export async function Register(prevState: { message: string },formData:FormData) {
+export async function Register(
+  prevState: { message: string },
+  formData: FormData
+) {
   const rawFormData = {
     name: formData.get("name")?.toString().trim(),
     email: formData.get("email")?.toString().trim(),
     password: formData.get("password")?.toString().trim(),
     confirmPassword: formData.get("confirmPassword")?.toString().trim(),
-  }
-  const user  = await prisma.user.count({
-    where:{
-      email:rawFormData.email
+  };
+  const user = await prisma.user.count({
+    where: {
+      email: rawFormData.email,
     },
   });
-  if(user>0){
-    return {message:"User already exists"};
+  if (user > 0) {
+    return { message: "User already exists" };
   }
-  if(rawFormData.password !== rawFormData.confirmPassword){
-    return {message:"Password mismatch"};
+  if (rawFormData.password !== rawFormData.confirmPassword) {
+    return { message: "Password mismatch" };
   }
   await prisma.user.create({
-    data:{
-      name:rawFormData.name??"",
-      email:rawFormData.email??"",
-      password:rawFormData.password??"",
-      created_at:new Date(),
-      updated_at:new Date(),
+    data: {
+      name: rawFormData.name ?? "",
+      email: rawFormData.email ?? "",
+      password: rawFormData.password ?? "",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
   });
   redirect("/login");
@@ -173,4 +176,41 @@ export async function getProfileUser(id: number) {
     tags: tags,
   };
   return r_user;
+}
+
+export async function getUserList() {
+  const users = (
+    await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        email: true,
+        created_at: true,
+        user_type_id: true,
+      },
+    })
+  ).map((user) => {
+    const list_user: ListUser = {
+      id: user.id,
+      name: user.name,
+      avatar: user.avatar ?? "",
+      email: user.email,
+      created_at:
+        user.created_at.toISOString().replace("T", " ").substring(0, 16) ?? "",
+      user_type_id: user.user_type_id,
+    };
+    return list_user;
+  });
+  return users;
+}
+
+export async function deleteUser(formData: FormData) {
+  const id = parseInt(formData.get("id")?.toString() ?? "0");
+  await prisma.user.delete({
+    where: {
+      id: id,
+    },
+  });
+  revalidatePath("/admin/users");
 }

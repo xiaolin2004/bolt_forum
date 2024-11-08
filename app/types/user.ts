@@ -22,3 +22,12 @@ export type User = {
   status: string;
   joinDate: string;
 }
+
+export type ListUser = {
+  id: number;
+  name: string;
+  avatar: string;
+  email: string;
+  created_at: string;
+  user_type_id: number;
+}
