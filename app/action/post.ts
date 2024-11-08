@@ -87,10 +87,19 @@ export async function getPostList() {
       title: post.title,
       author: author?.name ?? "",
       replies: replies,
-      lastReply: lastReply?.created_at?.toString() ?? "",
+      lastReply: lastReply?.created_at?.toISOString().replace("T", " ").substring(0, 16) ?? "",
     };
     return listPost;
   });
   return Promise.all(posts);
 }
 
+export async function deletePost(formData: FormData) {
+  const postId = parseInt(formData.get("id")?.toString() ?? "0");
+  await prisma.post.delete({
+    where: {
+      id: postId,
+    },
+  });
+  revalidatePath("/admin/posts");
+}
