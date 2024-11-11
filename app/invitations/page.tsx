@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Invitation } from '../types/invitation';
+import { Invitation } from '../../types/invitation';
 
 
 export default function InvitationsPage() {

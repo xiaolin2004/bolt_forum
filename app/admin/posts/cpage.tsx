@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { deletePost } from "@/app/action/post";
-import { ListPost } from "@/app/types/post";
+import { ListPost } from "@/types/post";
 
 export default function PostManagement({posts}:{posts:ListPost[]}) {
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ListUser } from "@/app/types/user";
+import { ListUser } from "@/types/user";
 import { deleteUser } from "@/app/action/User";
 
 export default function UserManagement({ users }: { users: ListUser[] }) {

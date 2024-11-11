@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/prisma/client";
-import { BriefAnnouncement } from "@/app/types/announcement";
+import { BriefAnnouncement } from "@/types/announcement";
 import { revalidatePath } from "next/cache";
 
 export async function getAnnouncement() {
@@ -15,7 +15,7 @@ export async function getAnnouncement() {
     (announcement) => {
       return {
         title: announcement.title,
-        date: announcement.updated_at.toString(),
+        date: announcement.updated_at.toISOString().replace("T", " ").substring(0, 16) ?? "",
         id: announcement.id,
       };
     }

@@ -1,6 +1,6 @@
 import EditProfilePage from "./c-page";
 import { getProfileUser } from "@/app/action/User";
-import { getCurrentSession } from "@/app/lib/session";
+import { getCurrentSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 export default async function page() {

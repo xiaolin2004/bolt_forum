@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BriefAnnouncement } from '../types/announcement';
+import { BriefAnnouncement } from '../../types/announcement';
 
 export default function Announcement({announcements}:{announcements:BriefAnnouncement[]}) {
   const [isCollapsed, setIsCollapsed] = useState(false);

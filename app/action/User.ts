@@ -5,8 +5,8 @@ import {
   generateSessionToken,
   createSession,
   setSessionTokenCookie,
-} from "../lib/session";
-import { cardUser, UserProfile, ListUser } from "../types/user";
+} from "../../lib/session";
+import { cardUser, UserProfile, ListUser } from "../../types/user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/prisma/client";
 import { redirect } from "next/navigation";

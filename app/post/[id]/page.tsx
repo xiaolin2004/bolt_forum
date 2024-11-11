@@ -1,4 +1,4 @@
-import { Post, Reply } from "@/app/types/post";
+import { Post, Reply } from "@/types/post";
 import PostDetail from "../component/post-detail";
 import { PrismaClient } from "@prisma/client";
 export default async function Page({

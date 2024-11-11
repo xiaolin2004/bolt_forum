@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Reply } from "@/app/types/post";
+import { Reply } from "@/types/post";
 export default function ReplyList({replies}:{replies:Reply[]}) {
   return (
     <div className="space-y-6">

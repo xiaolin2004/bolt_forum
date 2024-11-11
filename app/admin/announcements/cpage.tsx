@@ -2,7 +2,7 @@
 import { useState } from "react";
 // @ts-expect-error
 import { useFormStatus } from "react-dom";
-import { ManageAnnouncement } from "@/app/types/announcement";
+import { ManageAnnouncement } from "@/types/announcement";
 import {
   createOrUpdateAnnouncement,
   deleteAnnouncement,

@@ -5,7 +5,7 @@ import Image from "next/image";
 import InviteUsersModal from "@/app/components/InviteUsersModal";
 import { createReply } from "@/app/action/post";
 import ReplySubmitButton from "./reply-submit-button";
-import { Reply, Post } from "@/app/types/post";
+import { Reply, Post } from "@/types/post";
 
 export default function PostDetail({ id,post }: { id: number,post:Post }) {
   const [isReplying, setIsReplying] = useState(false);

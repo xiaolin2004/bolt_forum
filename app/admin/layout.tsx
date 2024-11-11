@@ -1,6 +1,5 @@
-import { get } from "http";
 import Link from "next/link";
-import { getCurrentSession } from "../lib/session";
+import { getCurrentSession } from "../../lib/session";
 import { redirect } from "next/navigation";
 
 

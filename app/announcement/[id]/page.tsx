@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/prisma/client";
-import { Announcement } from "@/app/types/announcement";
+import { Announcement } from "@/types/announcement";
 
 export default async function page({
   params,

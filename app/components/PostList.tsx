@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { redirect } from 'next/navigation';
-import {ListPost} from '@/app/types/post';
+import {ListPost} from '@/types/post';
 
 
 export default function PostList({posts}:{posts:ListPost[]}) {

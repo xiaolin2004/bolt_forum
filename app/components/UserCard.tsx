@@ -1,7 +1,7 @@
 "use client";
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import { cardUser as User } from "../types/user";
+import { cardUser as User } from "../../types/user";
 import { Logout } from "../action/User";
 
 

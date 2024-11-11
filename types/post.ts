@@ -28,3 +28,13 @@ export type ListPost = {
   replies: number;
   lastReply: string;
 };
+
+export type SearchResult = {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  avatar: string;
+  timestamp: string;
+  replies: number;
+};

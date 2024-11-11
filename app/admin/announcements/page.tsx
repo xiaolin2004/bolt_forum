@@ -1,7 +1,7 @@
 import AnnouncementManagement from "./cpage";
 import { prisma } from "@/prisma/client";
-import { ManageAnnouncement } from "@/app/types/announcement";
-import { getCurrentSession } from "@/app/lib/session";
+import { ManageAnnouncement } from "@/types/announcement";
+import { getCurrentSession } from "@/lib/session";
 
 export default async function page() {
   const user_id = (await getCurrentSession()).user?.id;

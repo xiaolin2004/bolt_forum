@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import EditAvatarButton from '../components/edit-avatar-botton';
 import { updateProfile } from '@/app/action/User';
-import { UserProfile } from '@/app/types/user';
+import { UserProfile } from '@/types/user';
 import EditSubmitButton from '../components/edit-submit-button';
 
 export default function EditProfilePage({profile1}:{profile1:UserProfile}) {

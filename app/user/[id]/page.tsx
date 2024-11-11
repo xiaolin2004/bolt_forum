@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import { getCurrentSession } from "@/app/lib/session";
+import { getCurrentSession } from "@/lib/session";
 import { getProfileUser } from "@/app/action/User";
 import EditButton from "./components/edit-botton";
 

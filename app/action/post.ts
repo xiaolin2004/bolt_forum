@@ -1,8 +1,8 @@
 "use server";
-import { getCurrentSession } from "../lib/session";
+import { getCurrentSession } from "../../lib/session";
 import { prisma } from "@/prisma/client";
 import { revalidatePath } from "next/cache";
-import { ListPost } from "../types/post";
+import { ListPost, SearchResult } from "../../types/post";
 
 export async function createPost(formData: FormData) {
   const session = await getCurrentSession();
@@ -87,7 +87,11 @@ export async function getPostList() {
       title: post.title,
       author: author?.name ?? "",
       replies: replies,
-      lastReply: lastReply?.created_at?.toISOString().replace("T", " ").substring(0, 16) ?? "",
+      lastReply:
+        lastReply?.created_at
+          ?.toISOString()
+          .replace("T", " ")
+          .substring(0, 16) ?? "",
     };
     return listPost;
   });
@@ -102,4 +106,58 @@ export async function deletePost(formData: FormData) {
     },
   });
   revalidatePath("/admin/posts");
+}
+
+export async function searchPost(keyword: string) {
+  const posts = (
+    await prisma.post.findMany({
+      where: {
+        OR: [
+          {
+            title: {
+              contains: keyword,
+            },
+          },
+          {
+            content: {
+              contains: keyword,
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        author: true,
+        updated_at: true,
+      },
+    })
+  ).map(async (post) => {
+    const author = await prisma.user.findUnique({
+      where:{
+        id: post.author,
+      },
+      select:{
+        name: true,
+        avatar:true,
+      }
+    });
+    const replies_cnt = await prisma.reply.count({
+      where:{
+        post_id: post.id,
+      },
+    });
+    const result: SearchResult = {
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      author: author?.name ?? "",
+      avatar: author?.avatar ?? "",
+      timestamp: post.updated_at.toISOString().replace("T", " ").substring(0, 16),
+      replies: replies_cnt,
+    };
+    return result;
+  });
+  return Promise.all(posts);
 }
