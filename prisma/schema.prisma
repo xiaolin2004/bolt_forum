@@ -60,7 +60,7 @@ model reply {
   content    String    @db.VarChar(2000)
   created_at DateTime? @db.Timestamp(6)
   post_id    Int
-  user_id    Int
+  user_id    Int @unique
   post       post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
   user       user      @relation(fields: [user_id], references: [id])
 }
@@ -73,7 +73,7 @@ model tag {
 
 model tag_user {
   tag_id  Int
-  user_id Int  @unique
+  user_id Int  
   tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
   user    user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -96,7 +96,7 @@ model user {
   post_invite_user   post_invite_user[]
   reply              reply[]
   sessions           session[]
-  tag_user           tag_user?
+  tag_user           tag_user[]
   user_types         user_types           @relation(fields: [user_type_id], references: [id], onDelete: NoAction)
 }
 

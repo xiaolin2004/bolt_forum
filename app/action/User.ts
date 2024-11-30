@@ -13,31 +13,46 @@ import { redirect } from "next/navigation";
 
 export async function getCardUser(): Promise<cardUser> {
   const session = await getCurrentSession();
+
+  // 如果没有 session，直接返回默认用户信息
   if (session.session == null) {
-    const user: cardUser = {
+    return {
       id: undefined,
       name: "",
       avatar: "/default-avatar.png",
       isLoggedIn: false,
     };
-    return user;
   }
+
+  // 一次性查询用户信息
   const user = await prisma.user.findUnique({
     where: {
       id: session.user?.id,
     },
     select: {
+      id: true,
       name: true,
       avatar: true,
     },
   });
-  const ex_user: cardUser = {
-    id: session.user?.id,
-    name: user?.name || "",
-    avatar: user?.avatar || "/default-avatar.png",
+
+  // 如果用户不存在，返回默认信息
+  if (!user) {
+    return {
+      id: undefined,
+      name: "",
+      avatar: "/default-avatar.png",
+      isLoggedIn: false,
+    };
+  }
+
+  // 返回用户信息
+  return {
+    id: user.id,
+    name: user.name || "",
+    avatar: user.avatar || "/default-avatar.png",
     isLoggedIn: true,
   };
-  return ex_user;
 }
 
 export async function Logout() {
@@ -107,75 +122,107 @@ export async function Register(
 }
 
 export async function updateProfile(userId: number, formData: FormData) {
-  const session = await getCurrentSession();
-  if (session == null) {
-    return;
+  try {
+    // 获取基础信息
+    const name = formData.get("name")?.toString().trim();
+    const phone = formData.get("phone")?.toString().trim();
+
+    // 获取所有 tags 数据
+    const tags = formData.getAll("tags").map((tag) => tag.toString().trim());
+
+    console.log("Received tags:", tags);
+
+    // 更新用户基本信息
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: name || undefined,
+        phone: phone || undefined,
+      },
+    });
+
+    // 清除旧的标签关联
+    await prisma.tag_user.deleteMany({
+      where: { user_id: userId },
+    });
+
+    // 逐个处理标签
+    const tagPromises = tags.map(async (tag) => {
+      // 检查标签是否存在
+      let existingTag = await prisma.tag.findUnique({
+        where: { feature: tag },
+      });
+
+      // 如果不存在则创建
+      if (!existingTag) {
+        existingTag = await prisma.tag.create({
+          data: { feature: tag },
+        });
+      }
+
+      // 创建关联
+      await prisma.tag_user.create({
+        data: {
+          user_id: userId,
+          tag_id: existingTag.id,
+        },
+      });
+    });
+
+    // 等待所有标签操作完成
+    await Promise.all(tagPromises);
+
+    console.log("Profile updated successfully.");
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
   }
-  if (session.user?.id != userId) {
-    return;
-  }
-  const user = session.user;
-  const rawFormData = {
-    name: formData.get("name")?.toString().trim() ?? user?.name,
-    phone: formData.get("phone")?.toString().trim() ?? user?.phone,
-    tags: formData.getAll("tags"),
-  };
-  const uuser = await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      name: rawFormData.name,
-      phone: rawFormData.phone,
-    },
-  });
-  revalidatePath(`/user/${user.id.toString()}`);
-  redirect(`/user/${user.id.toString()}`);
+
+  revalidatePath(`/user/${userId.toString()}`);
+  redirect(`/user/${userId.toString()}`);
 }
 
 export async function getProfileUser(id: number) {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
+  const userWithTags = await prisma.user.findUnique({
+    where: { id },
     select: {
       id: true,
       name: true,
       avatar: true,
       email: true,
       phone: true,
+      tag_user: {
+        select: {
+          tag: {
+            select: {
+              feature: true,
+            },
+          },
+        },
+      },
     },
   });
-  if (user == null) {
+
+  console.log("userWithTags:", userWithTags);
+
+  // 如果用户不存在，直接返回 null
+  if (!userWithTags) {
     return null;
   }
-  const tagPromises = (
-    await prisma.tag_user.findMany({
-      where: {
-        user_id: user.id,
-      },
-    })
-  ).map(async (tag_id) => {
-    const tag =
-      (
-        await prisma.tag.findUnique({
-          where: {
-            id: tag_id.tag_id,
-          },
-        })
-      )?.feature ?? "";
-    return tag;
-  });
-  const tags = await Promise.all(tagPromises);
-  const r_user: UserProfile = {
-    id: user.id,
-    name: user.name,
-    avatar: user.avatar ?? "",
-    email: user.email,
-    phone: user.phone ?? "",
-    tags: tags,
+
+  // 如果 tag_user 为 null 或 undefined，则初始化为空数组
+  const tags = (userWithTags.tag_user || []).map(
+    (tagUser) => tagUser.tag.feature
+  );
+
+  return {
+    id: userWithTags.id,
+    name: userWithTags.name,
+    avatar: userWithTags.avatar ?? "",
+    email: userWithTags.email,
+    phone: userWithTags.phone ?? "",
+    tags,
   };
-  return r_user;
 }
 
 export async function getUserList() {

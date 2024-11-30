@@ -17,6 +17,9 @@ export default async function ProfilePage({
 
   const v_user = await getProfileUser(user_id);
 
+  console.log("v_user:", v_user);
+  console.log("v_user.tags:", v_user?.tags);
+
   if (v_user == null) {
     return <div>用户不存在</div>;
   }

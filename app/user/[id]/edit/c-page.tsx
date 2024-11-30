@@ -1,44 +1,48 @@
 "use client";
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import EditAvatarButton from '../components/edit-avatar-botton';
-import { updateProfile } from '@/app/action/User';
-import { UserProfile } from '@/types/user';
-import EditSubmitButton from '../components/edit-submit-button';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import EditAvatarButton from "../components/edit-avatar-botton";
+import { updateProfile } from "@/app/action/User";
+import { UserProfile } from "@/types/user";
+import EditSubmitButton from "../components/edit-submit-button";
 
-export default function EditProfilePage({profile1}:{profile1:UserProfile}) {
+export default function EditProfilePage({
+  profile1,
+}: {
+  profile1: UserProfile;
+}) {
   const router = useRouter();
-
-  const updateProfileWithId  = updateProfile.bind(null,profile1.id);
-  
   const [profile, setProfile] = useState<UserProfile>(profile1);
-
-  const [newTag, setNewTag] = useState('');
+  const [newTag, setNewTag] = useState("");
 
   const addTag = () => {
     if (newTag && !profile.tags.includes(newTag)) {
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag]
+        tags: [...prev.tags, newTag],
       }));
-      setNewTag('');
+      setNewTag("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setProfile(prev => ({
+    setProfile((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
-      <form action={updateProfileWithId} className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+      <form
+        action={updateProfile.bind(null, profile.id)}
+        className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8"
+      >
         <h1 className="text-2xl font-bold mb-6">编辑个人资料</h1>
-        
+
         <div className="space-y-6">
+          {/* Avatar Section */}
           <div className="flex items-center space-x-6">
             <div className="relative w-24 h-24 rounded-full overflow-hidden">
               <Image
@@ -48,29 +52,34 @@ export default function EditProfilePage({profile1}:{profile1:UserProfile}) {
                 className="object-cover"
               />
             </div>
-            <EditAvatarButton user_id={1} />
+            <EditAvatarButton user_id={profile.id} />
           </div>
 
+          {/* Form Fields */}
           <div className="space-y-4">
+            {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 昵称
               </label>
               <input
-                name='name'
+                name="name"
                 type="text"
                 value={profile.name}
-                onChange={e => setProfile(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setProfile((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 邮箱
               </label>
               <input
-                name='email'
+                name="email"
                 type="email"
                 value={profile.email}
                 readOnly
@@ -78,19 +87,23 @@ export default function EditProfilePage({profile1}:{profile1:UserProfile}) {
               />
             </div>
 
+            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 电话
               </label>
               <input
-                name='phone'
+                name="phone"
                 type="tel"
                 value={profile.phone}
-                onChange={e => setProfile(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) =>
+                  setProfile((prev) => ({ ...prev, phone: e.target.value }))
+                }
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
+            {/* Tags */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 个人标签
@@ -116,7 +129,7 @@ export default function EditProfilePage({profile1}:{profile1:UserProfile}) {
                 <input
                   type="text"
                   value={newTag}
-                  onChange={e => setNewTag(e.target.value)}
+                  onChange={(e) => setNewTag(e.target.value)}
                   placeholder="添加新标签"
                   className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -131,6 +144,12 @@ export default function EditProfilePage({profile1}:{profile1:UserProfile}) {
             </div>
           </div>
 
+          {/* Hidden Tag Fields */}
+          {profile.tags.map((tag) => (
+            <input key={tag} type="hidden" name="tags" value={tag} />
+          ))}
+
+          {/* Actions */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
