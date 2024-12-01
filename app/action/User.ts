@@ -1,4 +1,5 @@
 "use server";
+
 import {
   deleteSessionTokenCookie,
   getCurrentSession,
@@ -16,11 +17,13 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/prisma/client";
 import { redirect } from "next/navigation";
 
+/**
+ * Get the current user's card details.
+ */
 export async function getCardUser(): Promise<cardUser> {
   const session = await getCurrentSession();
 
-  // 如果没有 session，直接返回默认用户信息
-  if (session.session == null) {
+  if (!session?.user) {
     return {
       id: undefined,
       name: "",
@@ -29,11 +32,8 @@ export async function getCardUser(): Promise<cardUser> {
     };
   }
 
-  // 一次性查询用户信息
   const user = await prisma.user.findUnique({
-    where: {
-      id: session.user?.id,
-    },
+    where: { id: session.user.id },
     select: {
       id: true,
       name: true,
@@ -41,152 +41,137 @@ export async function getCardUser(): Promise<cardUser> {
     },
   });
 
-  // 如果用户不存在，返回默认信息
-  if (!user) {
-    return {
-      id: undefined,
-      name: "",
-      avatar: "/default-avatar.png",
-      isLoggedIn: false,
-    };
-  }
-
-  // 返回用户信息
   return {
-    id: user.id,
-    name: user.name || "",
-    avatar: user.avatar || "/default-avatar.png",
-    isLoggedIn: true,
+    id: user?.id,
+    name: user?.name || "",
+    avatar: user?.avatar || "/public/default-avatar.png",
+    isLoggedIn: Boolean(user),
   };
 }
 
-export async function Logout() {
-  const nu = await deleteSessionTokenCookie();
+/**
+ * Log out the current user.
+ */
+export async function Logout(): Promise<void> {
+  await deleteSessionTokenCookie();
   revalidatePath("/login");
 }
 
+/**
+ * Log in a user with email and password.
+ */
 export async function logIn(
-  prevState: {
-    message: string;
-  },
+  prevState: { message: string },
   formData: FormData
-) {
-  const rawFormData = {
-    email: formData.get("email")?.toString().trim(),
-    password: formData.get("password")?.toString().trim(),
-  };
-  const user = await prisma.user.findUnique({
-    where: {
-      email: rawFormData.email,
-    },
-  });
-  if (user == null) {
-    return { message: `Email ${rawFormData.email} not found` };
+): Promise<{ message: string }> {
+  const email = formData.get("email")?.toString().trim();
+  const password = formData.get("password")?.toString().trim();
+
+  if (!email || !password) {
+    return { message: "Email and password are required" };
   }
-  if (user.password !== rawFormData.password) {
+
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    return { message: `Email ${email} not found` };
+  }
+
+  if (user.password !== password) {
     return { message: "Incorrect password" };
   }
+
   const token = generateSessionToken();
   const session = await createSession(token, user.id);
   await setSessionTokenCookie(token, session.expiresAt);
+
   revalidatePath("/");
   redirect("/");
 }
 
+/**
+ * Register a new user.
+ */
 export async function Register(
   prevState: { message: string },
   formData: FormData
-) {
-  const rawFormData = {
-    name: formData.get("name")?.toString().trim(),
-    email: formData.get("email")?.toString().trim(),
-    password: formData.get("password")?.toString().trim(),
-    confirmPassword: formData.get("confirmPassword")?.toString().trim(),
-  };
-  const user = await prisma.user.count({
-    where: {
-      email: rawFormData.email,
-    },
-  });
-  if (user > 0) {
+): Promise<{ message: string } | void> {
+  const name = formData.get("name")?.toString().trim();
+  const email = formData.get("email")?.toString().trim();
+  const password = formData.get("password")?.toString().trim();
+  const confirmPassword = formData.get("confirmPassword")?.toString().trim();
+
+  if (!name || !email || !password || !confirmPassword) {
+    return { message: "All fields are required" };
+  }
+
+  if (password !== confirmPassword) {
+    return { message: "Passwords do not match" };
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
     return { message: "User already exists" };
   }
-  if (rawFormData.password !== rawFormData.confirmPassword) {
-    return { message: "Password mismatch" };
-  }
+
   await prisma.user.create({
     data: {
-      name: rawFormData.name ?? "",
-      email: rawFormData.email ?? "",
-      password: rawFormData.password ?? "",
+      name,
+      email,
+      password,
       created_at: new Date(),
       updated_at: new Date(),
     },
   });
+
   redirect("/login");
 }
 
-export async function updateProfile(userId: number, formData: FormData) {
-  try {
-    // 获取基础信息
-    const name = formData.get("name")?.toString().trim();
-    const phone = formData.get("phone")?.toString().trim();
+/**
+ * Update a user's profile, including tags.
+ */
+export async function updateProfile(
+  userId: number,
+  formData: FormData
+): Promise<void> {
+  const name = formData.get("name")?.toString().trim();
+  const phone = formData.get("phone")?.toString().trim();
+  const tags = formData.getAll("tags").map((tag) => tag.toString().trim());
 
-    // 获取所有 tags 数据
-    const tags = formData.getAll("tags").map((tag) => tag.toString().trim());
-
-    // 更新用户基本信息
+  await prisma.$transaction(async (prisma) => {
+    // Update user info
     await prisma.user.update({
       where: { id: userId },
-      data: {
-        name: name || undefined,
-        phone: phone || undefined,
-      },
+      data: { name: name || undefined, phone: phone || undefined },
     });
 
-    // 清除旧的标签关联
-    await prisma.tag_user.deleteMany({
-      where: { user_id: userId },
-    });
+    // Clear and recreate tag-user relations
+    await prisma.tag_user.deleteMany({ where: { user_id: userId } });
 
-    // 逐个处理标签
     const tagPromises = tags.map(async (tag) => {
-      // 检查标签是否存在
-      let existingTag = await prisma.tag.findUnique({
+      const tagRecord = await prisma.tag.upsert({
         where: { feature: tag },
+        update: {},
+        create: { feature: tag },
       });
 
-      // 如果不存在则创建
-      if (!existingTag) {
-        existingTag = await prisma.tag.create({
-          data: { feature: tag },
-        });
-      }
-
-      // 创建关联
       await prisma.tag_user.create({
-        data: {
-          user_id: userId,
-          tag_id: existingTag.id,
-        },
+        data: { user_id: userId, tag_id: tagRecord.id },
       });
     });
 
-    // 等待所有标签操作完成
     await Promise.all(tagPromises);
+  });
 
-    console.log("Profile updated successfully.");
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    throw error;
-  }
-
-  revalidatePath(`/user/${userId.toString()}`);
-  redirect(`/user/${userId.toString()}`);
+  revalidatePath(`/user/${userId}`);
+  redirect(`/user/${userId}`);
 }
 
-export async function getProfileUser(id: number) {
-  const userWithTags = await prisma.user.findUnique({
+/**
+ * Get a user's profile, including tags.
+ */
+export async function getProfileUser(id: number): Promise<UserProfile | null> {
+  const user = await prisma.user.findUnique({
     where: { id },
     select: {
       id: true,
@@ -194,94 +179,74 @@ export async function getProfileUser(id: number) {
       avatar: true,
       email: true,
       phone: true,
-      tag_user: {
-        select: {
-          tag: {
-            select: {
-              feature: true,
-            },
-          },
-        },
-      },
+      tag_user: { select: { tag: { select: { feature: true } } } },
     },
   });
 
-  // 如果用户不存在，直接返回 null
-  if (!userWithTags) {
-    return null;
-  }
+  if (!user) return null;
 
-  // 如果 tag_user 为 null 或 undefined，则初始化为空数组
-  const tags = (userWithTags.tag_user || []).map(
-    (tagUser) => tagUser.tag.feature
-  );
+  const tags = user.tag_user.map((tagUser) => tagUser.tag.feature);
 
   return {
-    id: userWithTags.id,
-    name: userWithTags.name,
-    avatar: userWithTags.avatar ?? "",
-    email: userWithTags.email,
-    phone: userWithTags.phone ?? "",
+    id: user.id,
+    name: user.name,
+    avatar: user.avatar || "/public/default-avatar.png",
+    email: user.email,
+    phone: user.phone || "",
     tags,
   };
 }
 
-export async function getUserList() {
-  const users = (
-    await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-        email: true,
-        created_at: true,
-        user_type_id: true,
-      },
-    })
-  ).map((user) => {
-    const list_user: ListUser = {
-      id: user.id,
-      name: user.name,
-      avatar: user.avatar ?? "",
-      email: user.email,
-      created_at:
-        user.created_at.toISOString().replace("T", " ").substring(0, 16) ?? "",
-      user_type_id: user.user_type_id,
-    };
-    return list_user;
+/**
+ * Get a list of all users.
+ */
+export async function getUserList(): Promise<ListUser[]> {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      email: true,
+      created_at: true,
+      user_type_id: true,
+    },
   });
+
   return users.map((user) => ({
-    ...user,
-    avatar: user.avatar ?? "/default-avatar.png",
+    id: user.id,
+    name: user.name,
+    avatar: user.avatar || "/public/default-avatar.png",
+    email: user.email,
+    created_at: user.created_at.toISOString().substring(0, 16),
+    user_type_id: user.user_type_id,
   }));
 }
 
-export async function deleteUser(formData: FormData) {
-  const id = parseInt(formData.get("id")?.toString() ?? "0");
-  await prisma.user.delete({
-    where: {
-      id: id,
-    },
-  });
+/**
+ * Delete a user by ID.
+ */
+export async function deleteUser(formData: FormData): Promise<void> {
+  const id = parseInt(formData.get("id")?.toString() || "0", 10);
+
+  if (isNaN(id) || id <= 0) {
+    throw new Error("Invalid user ID");
+  }
+
+  await prisma.user.delete({ where: { id } });
   revalidatePath("/admin/users");
 }
 
+/**
+ * Get a list of users available for invitations.
+ */
 export async function getInvitationUsers(): Promise<InvitationUser[]> {
-  const users = (
-    await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-      },
-    })
-  ).map((user) => {
-    const invitation_user: InvitationUser = {
-      id: user.id.toString(),
-      name: user.name,
-      avatar: user.avatar ?? "/default-avatar.png",
-    };
-    return invitation_user;
+  const users = await prisma.user.findMany({
+    select: { id: true, name: true, avatar: true },
   });
-  return users;
+
+  return users.map((user) => ({
+    id: user.id.toString(),
+    name: user.name,
+    avatar: user.avatar || "/public/default-avatar.png",
+  }));
 }

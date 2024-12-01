@@ -1,66 +1,97 @@
 "use server";
+
 import { prisma } from "@/prisma/client";
 import { BriefAnnouncement } from "@/types/announcement";
 import { revalidatePath } from "next/cache";
 
-export async function getAnnouncement() {
-  const announcement = await prisma.announcement.findMany({
-    select: {
-      title: true,
-      updated_at: true,
-      id: true,
-    },
-  });
-  const briefAnnouncement: BriefAnnouncement[] = announcement.map(
-    (announcement) => {
-      return {
-        title: announcement.title,
-        date: announcement.updated_at.toISOString().replace("T", " ").substring(0, 16) ?? "",
-        id: announcement.id,
-      };
-    }
-  );
-  return briefAnnouncement;
+/**
+ * Fetch all announcements and return brief information.
+ */
+export async function getAnnouncement(): Promise<BriefAnnouncement[]> {
+  try {
+    const announcements = await prisma.announcement.findMany({
+      select: {
+        title: true,
+        updated_at: true,
+        id: true,
+      },
+    });
+
+    return announcements.map((announcement) => ({
+      title: announcement.title,
+      date:
+        announcement.updated_at
+          ?.toISOString()
+          .replace("T", " ")
+          .substring(0, 16) ?? "",
+      id: announcement.id,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch announcements:", error);
+    throw new Error("Failed to fetch announcements");
+  }
 }
 
+/**
+ * Create or update an announcement based on provided data.
+ */
 export async function createOrUpdateAnnouncement(
-  user_id: number,
+  userId: number,
   formData: FormData
-) {
-  const rawFormData = {
-    id: formData.get("id")?.toString().trim(),
-    title: formData.get("title")?.toString().trim(),
-    content: formData.get("content")?.toString().trim(),
-    updateAt: formData.get("updatedAt")?.toString().trim(),
-  };
-  const id = Number(rawFormData.id);
-  const updatedAtDate = rawFormData.updateAt ? new Date(rawFormData.updateAt) : new Date();
-  const announcement = await prisma.announcement.upsert({
-    where: {
-      id: id,
-    },
-    update: {
-      title: rawFormData.title,
-      content: rawFormData.content,
-      updated_at: updatedAtDate
-    },
-    create: {
-      author: user_id,
-      title: rawFormData.title ?? "",
-      content: rawFormData.content ?? "",
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-  });
-  revalidatePath("/admin/announcements");
+): Promise<void> {
+  try {
+    // Extract and sanitize form data
+    const id = Number(formData.get("id")?.toString().trim());
+    const title = formData.get("title")?.toString().trim() ?? "";
+    const content = formData.get("content")?.toString().trim() ?? "";
+    const updatedAt = formData.get("updatedAt")
+      ? new Date(formData.get("updatedAt")!.toString().trim())
+      : new Date();
+
+    // Upsert the announcement
+    await prisma.announcement.upsert({
+      where: { id: id || 0 }, // If id is not provided, it will create a new record
+      update: {
+        title,
+        content,
+        updated_at: updatedAt,
+      },
+      create: {
+        author: userId,
+        title,
+        content,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    });
+
+    // Revalidate cache for announcements page
+    revalidatePath("/admin/announcements");
+  } catch (error) {
+    console.error("Failed to create or update announcement:", error);
+    throw new Error("Failed to create or update announcement");
+  }
 }
 
-export async function deleteAnnouncement(formData:FormData) {
-  const id = Number(formData.get("id")?.toString().trim());
-  await prisma.announcement.delete({
-    where: {
-      id: id,
-    },
-  });
-  revalidatePath("/admin/announcements");
+/**
+ * Delete an announcement by its ID.
+ */
+export async function deleteAnnouncement(formData: FormData): Promise<void> {
+  try {
+    const id = Number(formData.get("id")?.toString().trim());
+    if (isNaN(id)) {
+      throw new Error("Invalid announcement ID");
+    }
+
+    // Delete the announcement
+    await prisma.announcement.delete({
+      where: { id },
+    });
+
+    // Revalidate cache for announcements page
+    revalidatePath("/admin/announcements");
+  } catch (error) {
+    console.error("Failed to delete announcement:", error);
+    throw new Error("Failed to delete announcement");
+  }
 }

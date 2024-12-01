@@ -1,163 +1,139 @@
 "use server";
+
 import { getCurrentSession } from "../../lib/session";
 import { prisma } from "@/prisma/client";
 import { revalidatePath } from "next/cache";
 import { ListPost, SearchResult } from "../../types/post";
 
-export async function createPost(formData: FormData) {
+/**
+ * Create a new post.
+ */
+export async function createPost(formData: FormData): Promise<void> {
   const session = await getCurrentSession();
-  if (session == null) {
-    return;
+  if (!session) {
+    throw new Error("User is not authenticated.");
   }
-  const rawFormData = {
-    title: formData.get("title")?.toString().trim(),
-    content: formData.get("content")?.toString().trim(),
-  };
-  const post = await prisma.post.create({
+
+  const title = formData.get("title")?.toString().trim() ?? "";
+  const content = formData.get("content")?.toString().trim() ?? "";
+
+  await prisma.post.create({
     data: {
-      title: rawFormData.title ?? "",
-      content: rawFormData.content ?? "",
+      title,
+      content,
       author: session.user?.id ?? 0,
       created_at: new Date(),
       updated_at: new Date(),
     },
   });
-  return;
+
+  revalidatePath("/posts");
 }
 
-export async function createReply(postId: number, formData: FormData) {
+/**
+ * Create a reply for a post.
+ */
+export async function createReply(
+  postId: number,
+  formData: FormData
+): Promise<void> {
   const session = await getCurrentSession();
-  if (session == null) {
-    return;
+  if (!session) {
+    throw new Error("User is not authenticated.");
   }
-  const rawFormData = {
-    content: formData.get("content")?.toString().trim(),
-    userId: session.user?.id,
-  };
-  const reply = await prisma.reply.create({
+
+  const content = formData.get("content")?.toString().trim() ?? "";
+
+  await prisma.reply.create({
     data: {
-      content: rawFormData.content ?? "",
+      content,
       created_at: new Date(),
       post_id: postId,
-      user_id: rawFormData.userId ?? 0,
+      user_id: session.user?.id ?? 0,
     },
   });
+
   revalidatePath(`/post/${postId}`);
 }
 
-export async function getPostList() {
-  const posts = (
-    await prisma.post.findMany({
-      select: {
-        id: true,
-        title: true,
-        author: true,
-        content: true,
-        created_at: true,
-        updated_at: true,
+/**
+ * Get a list of posts with additional metadata.
+ */
+export async function getPostList(): Promise<ListPost[]> {
+  const posts = await prisma.post.findMany({
+    include: {
+      user: {
+        select: { name: true },
       },
-    })
-  ).map(async (post) => {
-    const author = await prisma.user.findUnique({
-      where: {
-        id: post.author,
+      _count: {
+        select: { reply: true },
       },
-      select: {
-        name: true,
+      reply: {
+        orderBy: { created_at: "desc" },
+        take: 1,
+        select: { created_at: true },
       },
-    });
-    const replies = await prisma.reply.count({
-      where: {
-        post_id: post.id,
-      },
-    });
-    const lastReply = await prisma.reply.findFirst({
-      where: {
-        post_id: post.id,
-      },
-      orderBy: {
-        created_at: "desc",
-      },
-      select: {
-        created_at: true,
-      },
-    });
-    const listPost: ListPost = {
-      id: post.id,
-      title: post.title,
-      author: author?.name ?? "",
-      replies: replies,
-      lastReply:
-        lastReply?.created_at
-          ?.toISOString()
-          .replace("T", " ")
-          .substring(0, 16) ?? "",
-    };
-    return listPost;
-  });
-  return Promise.all(posts);
-}
-
-export async function deletePost(formData: FormData) {
-  const postId = parseInt(formData.get("id")?.toString() ?? "0");
-  await prisma.post.delete({
-    where: {
-      id: postId,
     },
   });
+
+  return posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    author: post.user?.name ?? "Unknown",
+    replies: post._count.reply,
+    lastReply:
+      post.reply[0]?.created_at
+        ?.toISOString()
+        .replace("T", " ")
+        .substring(0, 16) ?? "",
+  }));
+}
+
+/**
+ * Delete a post by ID.
+ */
+export async function deletePost(formData: FormData): Promise<void> {
+  const postId = parseInt(formData.get("id")?.toString() ?? "0", 10);
+
+  if (isNaN(postId) || postId <= 0) {
+    throw new Error("Invalid post ID.");
+  }
+
+  await prisma.post.delete({
+    where: { id: postId },
+  });
+
   revalidatePath("/admin/posts");
 }
 
-export async function searchPost(keyword: string) {
-  const posts = (
-    await prisma.post.findMany({
-      where: {
-        OR: [
-          {
-            title: {
-              contains: keyword,
-            },
-          },
-          {
-            content: {
-              contains: keyword,
-            },
-          },
-        ],
+/**
+ * Search for posts by keyword in title or content.
+ */
+export async function searchPost(keyword: string): Promise<SearchResult[]> {
+  const posts = await prisma.post.findMany({
+    where: {
+      OR: [
+        { title: { contains: keyword } },
+        { content: { contains: keyword } },
+      ],
+    },
+    include: {
+      user: {
+        select: { name: true, avatar: true },
       },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        author: true,
-        updated_at: true,
+      _count: {
+        select: { reply: true },
       },
-    })
-  ).map(async (post) => {
-    const author = await prisma.user.findUnique({
-      where:{
-        id: post.author,
-      },
-      select:{
-        name: true,
-        avatar:true,
-      }
-    });
-    const replies_cnt = await prisma.reply.count({
-      where:{
-        post_id: post.id,
-      },
-    });
-    const result: SearchResult = {
-      id: post.id,
-      title: post.title,
-      content: post.content,
-      author: author?.name ?? "",
-      avatar: author?.avatar ?? "",
-      timestamp: post.updated_at.toISOString().replace("T", " ").substring(0, 16),
-      replies: replies_cnt,
-    };
-    return result;
+    },
   });
-  return Promise.all(posts);
+
+  return posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    author: post.user?.name ?? "Unknown",
+    avatar: post.user?.avatar ?? "",
+    timestamp: post.updated_at.toISOString().replace("T", " ").substring(0, 16),
+    replies: post._count.reply,
+  }));
 }
