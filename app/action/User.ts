@@ -6,7 +6,12 @@ import {
   createSession,
   setSessionTokenCookie,
 } from "../../lib/session";
-import { cardUser, UserProfile, ListUser } from "../../types/user";
+import {
+  cardUser,
+  UserProfile,
+  ListUser,
+  InvitationUser,
+} from "../../types/user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/prisma/client";
 import { redirect } from "next/navigation";
@@ -245,7 +250,10 @@ export async function getUserList() {
     };
     return list_user;
   });
-  return users;
+  return users.map((user) => ({
+    ...user,
+    avatar: user.avatar ?? "/default-avatar.png",
+  }));
 }
 
 export async function deleteUser(formData: FormData) {
@@ -256,4 +264,24 @@ export async function deleteUser(formData: FormData) {
     },
   });
   revalidatePath("/admin/users");
+}
+
+export async function getInvitationUsers(): Promise<InvitationUser[]> {
+  const users = (
+    await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+      },
+    })
+  ).map((user) => {
+    const invitation_user: InvitationUser = {
+      id: user.id.toString(),
+      name: user.name,
+      avatar: user.avatar ?? "/default-avatar.png",
+    };
+    return invitation_user;
+  });
+  return users;
 }

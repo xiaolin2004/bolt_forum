@@ -9,7 +9,7 @@ export async function setInvitationStatus(
   // Update the status of the invitation
 }
 
-async function sendInvitations(postId: number, userIds: number[]) {
+export async function sendInvitations(postId: number, userIds: number[]) {
   try {
     await prisma.post_invite_user.createMany({
       data: userIds.map((userId) => ({
@@ -53,7 +53,7 @@ export async function getInvitationsByUserId(
     postTitle: invitation.post.title,
     inviter: {
       name: invitation.post.user.name,
-      avatar: invitation.post.user.avatar || "@/public/default_avatar.png", // 设置默认头像
+      avatar: invitation.post.user.avatar || "", // 设置默认头像
     },
     timestamp: invitation.timestamp.toISOString(),
     status: invitation.status.value as "pending" | "accepted" | "declined", // 确保类型匹配

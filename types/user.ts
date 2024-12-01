@@ -31,3 +31,9 @@ export type ListUser = {
   created_at: string;
   user_type_id: number;
 }
+
+export type InvitationUser = {
+  id: string;
+  name: string;
+  avatar: string;
+}

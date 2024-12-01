@@ -1,13 +1,10 @@
 "use client";
-import { useState } from 'react';
-import Image from 'next/image';
 
-interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  bio: string;
-}
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { getCardUser, getInvitationUsers } from "../action/User";
+import { InvitationUser } from "@/types/user";
+import { sendInvitations } from "../action/Invitation";
 
 interface InviteUsersModalProps {
   isOpen: boolean;
@@ -22,25 +19,56 @@ export default function InviteUsersModal({
   postId,
   postTitle,
 }: InviteUsersModalProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [isSending, setIsSending] = useState(false);
+  const [users, setUsers] = useState<InvitationUser[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock user data - in real app, fetch from API based on search query
-  const users: User[] = [
-    {
-      id: '1',
-      name: '李四',
-      avatar: '/default-avatar.png',
-      bio: '技术专家，对Web开发有深入研究'
-    },
-    {
-      id: '2',
-      name: '王五',
-      avatar: '/default-avatar.png',
-      bio: '全栈开发者，热爱分享技术经验'
-    },
-  ];
+  // Load all users initially
+  useEffect(() => {
+    const loadUsers = async () => {
+      setLoading(true);
+      try {
+        const result = await getInvitationUsers();
+        setUsers(result);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUsers();
+  }, []);
+
+  // Trigger search when searchQuery changes
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (searchQuery.trim() === "") {
+        // Load all users if search query is empty
+        const result = await getInvitationUsers();
+        setUsers(result);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        // Mock search logic: Filter users by name (replace with API call if needed)
+        const result = await getInvitationUsers();
+        const filteredUsers = result.filter((user) =>
+          user.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setUsers(filteredUsers);
+      } catch (error) {
+        console.error("Failed to search users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounceTimeout = setTimeout(searchUsers, 300); // Add a debounce delay
+    return () => clearTimeout(debounceTimeout); // Cleanup debounce on query change
+  }, [searchQuery]);
 
   const toggleUserSelection = (userId: string) => {
     const newSelected = new Set(selectedUsers);
@@ -57,14 +85,14 @@ export default function InviteUsersModal({
 
     setIsSending(true);
     try {
-      // In real app, send invitation to API
-      // await sendInvitations({
-      //   postId,
-      //   userIds: Array.from(selectedUsers)
-      // });
+      // 调用 server action
+      await sendInvitations(
+        Number(postId),
+        Array.from(selectedUsers).map(Number)
+      );
       onClose();
     } catch (error) {
-      console.error('Failed to send invitations:', error);
+      console.error("Failed to send invitations:", error);
     } finally {
       setIsSending(false);
     }
@@ -96,31 +124,37 @@ export default function InviteUsersModal({
         </div>
 
         <div className="max-h-60 overflow-y-auto mb-4">
-          {users.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => toggleUserSelection(user.id)}
-              className={`flex items-center p-3 rounded-lg cursor-pointer ${
-                selectedUsers.has(user.id) ? 'bg-blue-50' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
-                <Image
-                  src={user.avatar}
-                  alt={user.name}
-                  fill
-                  className="object-cover"
-                />
+          {loading ? (
+            <div className="text-center">加载中...</div>
+          ) : users.length === 0 ? (
+            <div className="text-center text-gray-500">未找到用户</div>
+          ) : (
+            users.map((user) => (
+              <div
+                key={user.id}
+                onClick={() => toggleUserSelection(user.id)}
+                className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                  selectedUsers.has(user.id) ? "bg-blue-50" : "hover:bg-gray-50"
+                }`}
+              >
+                <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
+                  <Image
+                    src={user.avatar}
+                    alt={user.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium">{user.name}</h3>
+                  <p className="text-sm text-gray-500">{user.name}</p>
+                </div>
+                {selectedUsers.has(user.id) && (
+                  <span className="text-blue-500 ml-2">✓</span>
+                )}
               </div>
-              <div className="flex-1">
-                <h3 className="font-medium">{user.name}</h3>
-                <p className="text-sm text-gray-500">{user.bio}</p>
-              </div>
-              {selectedUsers.has(user.id) && (
-                <span className="text-blue-500 ml-2">✓</span>
-              )}
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="flex justify-end space-x-3">
@@ -134,10 +168,12 @@ export default function InviteUsersModal({
             onClick={handleInvite}
             disabled={selectedUsers.size === 0 || isSending}
             className={`px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 ${
-              (selectedUsers.size === 0 || isSending) ? 'opacity-50 cursor-not-allowed' : ''
+              selectedUsers.size === 0 || isSending
+                ? "opacity-50 cursor-not-allowed"
+                : ""
             }`}
           >
-            {isSending ? '发送中...' : '发送邀请'}
+            {isSending ? "发送中..." : "发送邀请"}
           </button>
         </div>
       </div>
