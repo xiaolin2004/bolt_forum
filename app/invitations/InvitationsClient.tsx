@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Invitation } from "../../types/invitation";
+import { setInvitationStatus } from "../action/Invitation";
 
 interface InvitationsClientProps {
   initialInvitations: Invitation[];
@@ -23,15 +24,18 @@ export default function InvitationsClient({
     accept: boolean
   ) => {
     try {
-      // 模拟 API 调用
+      // 调用 Server Action 更新状态
+      const status = accept ? "accepted" : "declined";
+      await setInvitationStatus(invitationId, status);
+
+      // 更新本地状态
       setInvitations((invitations) =>
         invitations.map((inv) =>
-          inv.id === invitationId
-            ? { ...inv, status: accept ? "accepted" : "declined" }
-            : inv
+          inv.id === invitationId ? { ...inv, status } : inv
         )
       );
 
+      // 接受邀请时跳转到帖子详情
       if (accept) {
         const invitation = invitations.find((inv) => inv.id === invitationId);
         if (invitation) {

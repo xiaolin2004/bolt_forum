@@ -1,12 +1,26 @@
 "use server";
 import { prisma } from "@/prisma/client";
-import { Invitation } from "../../types/invitation";
+import { Invitation } from "@/types/invitation";
 
 export async function setInvitationStatus(
   invitationId: string,
   status: "accepted" | "declined"
 ) {
-  // Update the status of the invitation
+  try {
+    // 确定状态的 ID 值
+    const statusId = status === "accepted" ? 2 : 3;
+
+    // 更新邀请状态
+    const updatedInvitation = await prisma.post_invite_user.update({
+      where: { id: parseInt(invitationId) }, // 确保 invitationId 转换为整数
+      data: { status_id: statusId },
+    });
+
+    return updatedInvitation; // 返回更新后的记录
+  } catch (error) {
+    console.error("Failed to update invitation status:", error);
+    throw new Error("Failed to update invitation status");
+  }
 }
 
 export async function sendInvitations(postId: number, userIds: number[]) {
