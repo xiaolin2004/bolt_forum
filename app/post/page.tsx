@@ -1,70 +1,67 @@
 import { Post, Reply } from "@/types/post";
 import PostDetail from "@/app/post/component/post-detail";
-import {prisma} from "@/prisma/client";
+import { prisma } from "@/prisma/client";
+
 export default async function Page({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const id = Number((await params).id);
-  const post = await prisma.post.findUnique({
+
+  // 合并查询，获取帖子及其相关信息
+  const postWithDetails = await prisma.post.findUnique({
     where: {
       id: id,
     },
-  });
-  if (post == null) {
-    return <div>Post not found</div>;
-  }
-  const author = await prisma.user.findUnique({
-    where: {
-      id: post.author,
-    },
-    select: {
-      avatar: true,
-      name: true,
-    },
-  });
-  const replies = await prisma.reply.findMany({
-    where: {
-      post_id: id,
-    },
-    select: {
-      id: true,
-      content: true,
-      user_id: true,
-      created_at: true,
+    include: {
+      user: {
+        // 帖子作者信息
+        select: {
+          name: true,
+          avatar: true,
+        },
+      },
+      reply: {
+        // 回复及其作者信息
+        select: {
+          id: true,
+          content: true,
+          created_at: true,
+          user: {
+            select: {
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      },
     },
   });
 
-  const reply = await Promise.all(
-    replies.map(async (reply) => {
-      const reply_author = await prisma.user.findUnique({
-        where: {
-          id: reply.user_id,
-        },
-        select: {
-          avatar: true,
-          name: true,
-        },
-      });
-      const preply: Reply = {
-        id: reply.id,
-        content: reply.content,
-        author: reply_author?.name ?? "",
-        avatar: reply_author?.avatar ?? "",
-        timestamp: reply.created_at?.toString() ?? "",
-      };
-      return preply;
-    })
-  );
+  if (!postWithDetails) {
+    return <div>Post not found</div>;
+  }
+
+  // 格式化回复数据，确保符合 Reply 类型
+  const replies: Reply[] = postWithDetails.reply.map((reply) => ({
+    id: reply.id,
+    content: reply.content,
+    author: reply.user?.name ?? "",
+    avatar: reply.user?.avatar ?? "",
+    timestamp: reply.created_at?.toISOString() ?? "",
+  }));
+
+  // 格式化帖子数据，确保符合 Post 类型
   const attr_post: Post = {
-    id: post.id.toString(),
-    title: post.title,
-    content: post.content,
-    author: author?.name ?? "",
-    avatar: author?.avatar ?? "",
-    timestamp: post.created_at.toString(),
-    replies: reply,
+    id: postWithDetails.id.toString(),
+    title: postWithDetails.title,
+    content: postWithDetails.content,
+    author: postWithDetails.user?.name ?? "",
+    avatar: postWithDetails.user?.avatar ?? "",
+    timestamp: postWithDetails.created_at.toISOString(),
+    replies: replies,
   };
+
   return <PostDetail id={id} post={attr_post} />;
 }

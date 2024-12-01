@@ -15,6 +15,7 @@ function LogoutButton(){
     </button>
   );
 }
+
 export default function UserCard({ user }: { user: User }) {
   const handleClick = () => {
     if (user.isLoggedIn) {

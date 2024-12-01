@@ -7,13 +7,11 @@ import { createReply } from "@/app/action/post";
 import ReplySubmitButton from "./reply-submit-button";
 import { Reply, Post } from "@/types/post";
 
-export default function PostDetail({ id,post }: { id: number,post:Post }) {
+export default function PostDetail({ id, post }: { id: number; post: Post }) {
   const [isReplying, setIsReplying] = useState(false);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const createReplyWithId = createReply.bind(null, id);
-
-  // Mock post data - in real app, fetch from API using params.id
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -66,12 +64,12 @@ export default function PostDetail({ id,post }: { id: number,post:Post }) {
           {isReplying && (
             <form action={createReplyWithId} className="mt-4">
               <input
-              name="content"
-              id="content"
-              type="text"
-              required
-              placeholder="写下你的回复..."
-              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                name="content"
+                id="content"
+                type="text"
+                required
+                placeholder="写下你的回复..."
+                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
               <div className="mt-2 flex justify-end space-x-2">

@@ -17,9 +17,6 @@ export default async function ProfilePage({
 
   const v_user = await getProfileUser(user_id);
 
-  console.log("v_user:", v_user);
-  console.log("v_user.tags:", v_user?.tags);
-
   if (v_user == null) {
     return <div>用户不存在</div>;
   }
@@ -37,9 +34,7 @@ export default async function ProfilePage({
           </div>
           <div>
             <h1 className="text-2xl font-bold">{v_user?.name}</h1>
-            {user.id === user_id && (
-              <EditButton user_id={user_id} />
-            )}
+            {user.id === user_id && <EditButton user_id={user_id} />}
           </div>
         </div>
 

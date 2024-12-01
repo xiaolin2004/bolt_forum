@@ -130,8 +130,6 @@ export async function updateProfile(userId: number, formData: FormData) {
     // 获取所有 tags 数据
     const tags = formData.getAll("tags").map((tag) => tag.toString().trim());
 
-    console.log("Received tags:", tags);
-
     // 更新用户基本信息
     await prisma.user.update({
       where: { id: userId },
@@ -202,8 +200,6 @@ export async function getProfileUser(id: number) {
       },
     },
   });
-
-  console.log("userWithTags:", userWithTags);
 
   // 如果用户不存在，直接返回 null
   if (!userWithTags) {

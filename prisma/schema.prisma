@@ -19,8 +19,9 @@ model announcement {
 }
 
 model invitation_status {
-  id    Int    @id(map: "invitation_status_pk")
-  value String @unique(map: "invitation_status_unique") @db.VarChar
+  id               Int                @id @default(autoincrement())
+  value            String             @unique(map: "invitation_status_unique") @db.VarChar
+  post_invite_user post_invite_user[]
 }
 
 model post {
@@ -46,13 +47,18 @@ model post_assigned_user {
 }
 
 model post_invite_user {
-  post_id   Int
-  user_id   Int
-  status_id Int? @default(1)
-  post      post @relation(fields: [post_id], references: [id], onDelete: Cascade)
-  user      user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  post_id    Int // 帖子 ID
+  invitee_id Int // 被邀请的用户 ID
+  status_id  Int      @default(1) // 邀请状态，引用 invitation_status
+  timestamp  DateTime @default(now()) // 邀请时间戳
 
-  @@id([post_id, user_id])
+  post    post              @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  invitee user              @relation(fields: [invitee_id], references: [id])
+  status  invitation_status @relation(fields: [status_id], references: [id])
+
+  @@index([post_id])
+  @@index([invitee_id])
 }
 
 model reply {
@@ -60,7 +66,7 @@ model reply {
   content    String    @db.VarChar(2000)
   created_at DateTime? @db.Timestamp(6)
   post_id    Int
-  user_id    Int @unique
+  user_id    Int
   post       post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
   user       user      @relation(fields: [user_id], references: [id])
 }
@@ -73,7 +79,7 @@ model tag {
 
 model tag_user {
   tag_id  Int
-  user_id Int  
+  user_id Int
   tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
   user    user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -93,11 +99,11 @@ model user {
   announcement       announcement[]
   post               post[]
   post_assigned_user post_assigned_user[]
-  post_invite_user   post_invite_user[]
   reply              reply[]
   sessions           session[]
   tag_user           tag_user[]
   user_types         user_types           @relation(fields: [user_type_id], references: [id], onDelete: NoAction)
+  post_invite_user   post_invite_user[]
 }
 
 model user_types {
