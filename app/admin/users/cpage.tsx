@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { ListUser } from "@/types/user";
 import { deleteUser } from "@/app/action/User";
@@ -10,9 +11,10 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
   const usersPerPage = 10;
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<ListUser | null>(null);
+  const [allUsers, setAllUsers] = useState(users); // 管理用户列表状态
 
-  const totalPages = Math.ceil(users.length / usersPerPage);
-  const currentUsers = users.slice(
+  const totalPages = Math.ceil(allUsers.length / usersPerPage);
+  const currentUsers = allUsers.slice(
     (currentPage - 1) * usersPerPage,
     currentPage * usersPerPage
   );
@@ -20,6 +22,23 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
   const handleDeleteUser = (user: ListUser) => {
     setUserToDelete(user);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirmation = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault(); // 阻止默认表单提交行为
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      await deleteUser(formData); // 执行删除操作
+      setAllUsers((prevUsers) =>
+        prevUsers.filter((u) => u.id !== userToDelete?.id)
+      ); // 更新用户列表
+      setIsDeleteModalOpen(false); // 关闭模态框
+    } catch (error) {
+      console.error("删除用户失败:", error);
+    }
   };
 
   return (
@@ -47,9 +66,6 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 角色
               </th>
-              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                状态
-              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 注册时间
               </th>
@@ -77,17 +93,6 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
                     {user.user_type_id}
                   </span>
                 </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap">
-                  <select
-                    value={user.status}
-                    onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                    className="text-sm rounded-md border-gray-300"
-                  >
-                    <option value="正常">正常</option>
-                    <option value="禁言">禁言</option>
-                    <option value="封禁">封禁</option>
-                  </select>
-                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {user.created_at}
                 </td>
@@ -131,6 +136,7 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
           </button>
         ))}
       </div>
+
       {isDeleteModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -159,7 +165,7 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
                   </div>
                 </div>
               </div>
-              <form action={deleteUser}>
+              <form onSubmit={handleDeleteConfirmation}>
                 <input type="hidden" name="id" value={userToDelete?.id} />
                 <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                   <button

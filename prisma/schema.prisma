@@ -54,7 +54,7 @@ model post_invite_user {
   timestamp  DateTime @default(now()) // 邀请时间戳
 
   post    post              @relation(fields: [post_id], references: [id], onDelete: Cascade)
-  invitee user              @relation(fields: [invitee_id], references: [id])
+  invitee user              @relation(fields: [invitee_id], references: [id], onDelete: Cascade)
   status  invitation_status @relation(fields: [status_id], references: [id])
 
   @@index([post_id])

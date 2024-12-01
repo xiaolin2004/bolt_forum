@@ -15,10 +15,16 @@ export default function AnnouncementManagement({
   announcements: ManageAnnouncement[];
   user_id: number;
 }) {
-  const create_or_update_announcement = createOrUpdateAnnouncement.bind(
-    null,
-    user_id
-  );
+  const create_or_update_announcement = async (formData: FormData) => {
+    await createOrUpdateAnnouncement(user_id, formData);
+    setIsModalOpen(false); // 提交完成后关闭模态框
+  };
+
+  const handleDeleteAnnouncement = async (formData: FormData) => {
+    await deleteAnnouncement(formData);
+    setIsDeleteModalOpen(false); // 删除完成后关闭模态框
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAnnouncement, setCurrentAnnouncement] =
     useState<ManageAnnouncement | null>(null);
@@ -74,9 +80,7 @@ export default function AnnouncementManagement({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full  bg-green-100 text-green-800   `}
-                  >
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                     已发布
                   </span>
                 </td>
@@ -119,12 +123,19 @@ export default function AnnouncementManagement({
             <h2 className="text-xl font-semibold mb-4">
               {currentAnnouncement ? "编辑公告" : "发布新公告"}
             </h2>
-            <form action={create_or_update_announcement} className="space-y-4">
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                await create_or_update_announcement(formData);
+              }}
+              className="space-y-4"
+            >
               <div>
                 <input
                   name="id"
                   type="hidden"
-                  value={currentAnnouncement?.id}
+                  value={currentAnnouncement?.id || ""}
                 />
               </div>
               <div>
@@ -135,7 +146,7 @@ export default function AnnouncementManagement({
                   name="title"
                   type="text"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  defaultValue={currentAnnouncement?.title}
+                  defaultValue={currentAnnouncement?.title || ""}
                 />
               </div>
               <div>
@@ -146,7 +157,7 @@ export default function AnnouncementManagement({
                   rows={4}
                   name="content"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  defaultValue={currentAnnouncement?.content}
+                  defaultValue={currentAnnouncement?.content || ""}
                 />
               </div>
               <div>
@@ -157,7 +168,7 @@ export default function AnnouncementManagement({
                   name="updatedAt"
                   type="date"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  defaultValue={currentAnnouncement?.updateAt}
+                  defaultValue={currentAnnouncement?.updateAt || ""}
                 />
               </div>
               <div className="flex justify-end space-x-3">
@@ -180,8 +191,19 @@ export default function AnnouncementManagement({
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-semibold mb-4">确认删除</h2>
             <p className="mb-4">你确定要删除这个公告吗？此操作无法撤销。</p>
-            <form action={deleteAnnouncement} className="space-y-4">
-              <input name="id" type="hidden" defaultValue={announcementToDelete?.id} />
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                await handleDeleteAnnouncement(formData);
+              }}
+              className="space-y-4"
+            >
+              <input
+                name="id"
+                type="hidden"
+                defaultValue={announcementToDelete?.id || ""}
+              />
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"

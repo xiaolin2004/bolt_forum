@@ -4,19 +4,38 @@ import Link from "next/link";
 import { deletePost } from "@/app/action/post";
 import { ListPost } from "@/types/post";
 
-export default function PostManagement({posts}:{posts:ListPost[]}) {
-
+export default function PostManagement({ posts }: { posts: ListPost[] }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<ListPost | null>(null);
-
+  const [allPosts, setAllPosts] = useState(posts); // 动态管理帖子列表
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 10;
 
-  const totalPages = Math.ceil(posts.length / postsPerPage);
-  const currentPosts = posts.slice(
+  const totalPages = Math.ceil(allPosts.length / postsPerPage);
+  const currentPosts = allPosts.slice(
     (currentPage - 1) * postsPerPage,
     currentPage * postsPerPage
   );
+
+  const handleDelete = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // 防止默认行为
+
+    if (!postToDelete) {
+      console.error("没有选择要删除的帖子！");
+      return;
+    }
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      await deletePost(formData); // 调用删除 API
+      setAllPosts((prevPosts) =>
+        prevPosts.filter((p) => p.id !== postToDelete.id)
+      ); // 更新帖子列表
+      setIsDeleteModalOpen(false); // 关闭模态框
+    } catch (error) {
+      console.error("删除帖子失败：", error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -48,9 +67,6 @@ export default function PostManagement({posts}:{posts:ListPost[]}) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 分类
               </th>
-              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                状态
-              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 回复数
               </th>
@@ -77,25 +93,6 @@ export default function PostManagement({posts}:{posts:ListPost[]}) {
                     需求
                   </span>
                 </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap">
-                  <select
-                    value={post.status}
-                    onChange={(e) => {
-                      setPosts(
-                        posts.map((p) =>
-                          p.id === post.id
-                            ? { ...p, status: e.target.value }
-                            : p
-                        )
-                      );
-                    }}
-                    className="text-sm rounded-md border-gray-300"
-                  >
-                    <option value="正常">正常</option>
-                    <option value="置顶">置顶</option>
-                    <option value="隐藏">隐藏</option>
-                  </select>
-                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {post.replies}
                 </td>
@@ -127,9 +124,9 @@ export default function PostManagement({posts}:{posts:ListPost[]}) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-semibold mb-4">确认删除</h2>
             <p className="mb-4">你确定要删除这个帖子吗？此操作无法撤销。</p>
-            <div className="flex justify-end space-x-3">
-              <form action={deletePost}>
-                <input type="hidden" name="id" value={postToDelete?.id}></input>
+            <form onSubmit={handleDelete}>
+              <input type="hidden" name="id" value={postToDelete?.id || ""} />
+              <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsDeleteModalOpen(false)}
@@ -143,8 +140,8 @@ export default function PostManagement({posts}:{posts:ListPost[]}) {
                 >
                   删除
                 </button>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -157,8 +154,8 @@ export default function PostManagement({posts}:{posts:ListPost[]}) {
             onClick={() => setCurrentPage(i + 1)}
             className={`px-4 py-2 rounded ${
               currentPage === i + 1
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 hover:bg-gray-300'
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
             {i + 1}
