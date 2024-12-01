@@ -58,7 +58,7 @@ export async function getRecentActivity(): Promise<DashboardActivity> {
       id: post.id,
       title: post.title,
       authorName: post.user.name,
-      avatar: post.user.avatar || "/default-avatar.png",
+      avatar: "https://api.dicebear.com/9.x/pixel-art/svg",
       createdAt: post.created_at.toISOString().substring(0, 16),
     })),
     recentAnnouncements: recentAnnouncements.map((announcement) => ({

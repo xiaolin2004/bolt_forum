@@ -46,7 +46,7 @@ export default function EditProfilePage({
           <div className="flex items-center space-x-6">
             <div className="relative w-24 h-24 rounded-full overflow-hidden">
               <Image
-                src={profile.avatar}
+                src= "https://api.dicebear.com/9.x/pixel-art/svg"
                 alt="用户头像"
                 fill
                 className="object-cover"

@@ -38,7 +38,10 @@ export default function PostDetail({ id, post }: { id: number; post: Post }) {
           <div className="flex items-center mb-4">
             <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
               <Image
-                src={post.avatar}
+                src={
+                  post.avatar ||
+                  "https://api.dicebear.com/9.x/pixel-art/svg"
+                }
                 alt={post.author}
                 fill
                 className="object-cover"
@@ -96,7 +99,7 @@ export default function PostDetail({ id, post }: { id: number; post: Post }) {
                 <div className="flex items-center mb-2">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden mr-2">
                     <Image
-                      src={reply.avatar}
+                      src="https://api.dicebear.com/9.x/pixel-art/svg"
                       alt={reply.author}
                       fill
                       className="object-cover"

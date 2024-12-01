@@ -8,7 +8,7 @@ export default function ReplyList({replies}:{replies:Reply[]}) {
           <div className="flex items-center mb-2">
             <div className="relative w-8 h-8 rounded-full overflow-hidden mr-2">
               <Image
-                src={reply.avatar}
+                src="https://api.dicebear.com/9.x/pixel-art/svg"
                 alt={reply.author}
                 fill
                 className="object-cover"

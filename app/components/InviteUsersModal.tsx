@@ -139,7 +139,7 @@ export default function InviteUsersModal({
               >
                 <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
                   <Image
-                    src={user.avatar}
+                    src="https://api.dicebear.com/9.x/pixel-art/svg"
                     alt={user.name}
                     fill
                     className="object-cover"

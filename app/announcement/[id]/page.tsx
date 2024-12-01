@@ -61,7 +61,7 @@ export default async function page({
           <div className="flex items-center mb-4">
             <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
               <Image
-                src={author.avatar ?? ""}
+                src="https://api.dicebear.com/9.x/pixel-art/svg"
                 alt={author.name}
                 fill
                 className="object-cover"

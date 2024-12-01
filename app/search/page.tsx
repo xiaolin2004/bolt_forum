@@ -43,7 +43,7 @@ export default async function SearchResults({
                   <div className="flex items-center mb-2">
                     <div className="relative w-8 h-8 rounded-full overflow-hidden mr-3">
                       <Image
-                        src={result.avatar}
+                        src="https://api.dicebear.com/9.x/pixel-art/svg"
                         alt={result.author}
                         fill
                         className="object-cover"

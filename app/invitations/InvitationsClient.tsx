@@ -92,7 +92,7 @@ export default function InvitationsClient({
                 <div className="flex items-center mb-3">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden mr-3">
                     <Image
-                      src={invitation.inviter.avatar}
+                      src="https://api.dicebear.com/9.x/pixel-art/svg"
                       alt={invitation.inviter.name}
                       fill
                       className="object-cover"
@@ -154,7 +154,10 @@ export default function InvitationsClient({
                 <div className="flex items-center mb-3">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden mr-3">
                     <Image
-                      src={invitation.inviter.avatar}
+                      src={
+                        invitation.inviter.avatar ||
+                        "https://avatars.dicebear.com/api/adventurer/random.svgebear.com/api/adventurer/random.svg"
+                      }
                       alt={invitation.inviter.name}
                       fill
                       className="object-cover"

@@ -33,7 +33,7 @@ export default function UserCard({ user }: { user: User }) {
       <div className="flex items-center space-x-3">
         <div className="relative w-10 h-10 rounded-full overflow-hidden">
           <Image
-            src={user.avatar}
+            src="https://api.dicebear.com/9.x/pixel-art/svg"
             alt="用户头像"
             fill
             className="object-cover"
