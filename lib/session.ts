@@ -10,8 +10,8 @@ import {
 import { sha256 } from "@oslojs/crypto/sha2";
 import { cookies } from "next/headers";
 import { cache } from "react";
+import { prisma } from "@/prisma/client";
 
-const prisma = new PrismaClient();
 
 // Redis 初始化
 import { createClient } from "redis";
@@ -49,20 +49,16 @@ export async function createSession(
   userId: number
 ): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 5; // 5天过期
+  const expireSeconds = 60 * 60 * 24 * 5; // 5天过期
 
   const session: Session = {
     id: sessionId,
     userId,
-    expiresAt: new Date(expiresAt),
+    expiresAt: new Date(Date.now() + expireSeconds * 1000),
   };
 
-  // 存储到 Redis
-  await redisSet(
-    `session:${sessionId}`,
-    session,
-    Math.floor((expiresAt - Date.now()) / 1000)
-  );
+  // 存储到 Redis，设置过期时间
+  await redisSet(`session:${sessionId}`, session, expireSeconds);
 
   return session;
 }
@@ -76,26 +72,7 @@ export async function validateSessionToken(
   // 从 Redis 获取会话
   const session = await redisGet<Session>(`session:${sessionId}`);
   if (!session) {
-    return { session: null, user: null };
-  }
-
-  // 转换 expiresAt 为 Date 对象
-  session.expiresAt = new Date(session.expiresAt);
-
-  // 检查会话是否过期
-  if (Date.now() >= session.expiresAt.getTime()) {
-    await redis.del(`session:${sessionId}`);
-    return { session: null, user: null };
-  }
-
-  // 如果会话快过期，延长有效期
-  if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 2) {
-    session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 5);
-    await redisSet(
-      `session:${sessionId}`,
-      session,
-      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000)
-    );
+    return { session: null, user: null }; // 会话不存在或已过期
   }
 
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
