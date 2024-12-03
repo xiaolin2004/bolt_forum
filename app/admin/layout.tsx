@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { getCurrentSession } from "../../lib/session";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
+const metadata: Metadata = {
+  title: "管理后台",
+  description: "管理后台",
+};
 
 function ReturnHome() {
   return (
-    <Link
-    href={"/"}
-      className="text-gray-500 hover:text-gray-700"
-    >
+    <Link href={"/"} className="text-gray-500 hover:text-gray-700">
       返回前台
     </Link>
   );
@@ -18,11 +20,11 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session =await getCurrentSession();
+  const session = await getCurrentSession();
   if (session == null) {
     redirect("/login");
   }
-  if(session.user?.user_type_id!=2){
+  if (session.user?.user_type_id != 2) {
     redirect("/");
   }
   const menuItems = [

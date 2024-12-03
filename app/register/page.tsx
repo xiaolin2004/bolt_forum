@@ -1,6 +1,12 @@
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "../../lib/session";
 import RegisterPage from "./cpage";
+import type { Metadata } from "next";
+
+const metadata: Metadata = {
+  title: "注册",
+  description: "注册",
+};
 
 export default async function page() {
   const session = await getCurrentSession();

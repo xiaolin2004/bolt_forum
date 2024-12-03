@@ -8,7 +8,12 @@ import { getCardUser } from "./action/User";
 import { getPostList } from "./action/post";
 import { getAnnouncement } from "./action/Announcement";
 import { Logout } from "./action/User";
+import type { Metadata } from "next";
 
+const metadata: Metadata = {
+  title: "首页",
+  description: "这是首页",
+};
 
 async function LogoutButton() {
   return (

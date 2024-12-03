@@ -3,6 +3,12 @@ import Image from "next/image";
 import { getCurrentSession } from "@/lib/session";
 import { getProfileUser } from "@/app/action/User";
 import EditButton from "./components/edit-botton";
+import type { Metadata } from "next";
+
+const metadata: Metadata = {
+  title: "用户信息",
+  description: "用户信息",
+};
 
 export default async function ProfilePage({
   params,

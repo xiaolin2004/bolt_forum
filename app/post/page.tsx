@@ -1,6 +1,12 @@
 import { Post, Reply } from "@/types/post";
 import PostDetail from "@/app/post/component/post-detail";
 import { prisma } from "@/prisma/client";
+import type { Metadata } from "next";
+
+const metadata: Metadata = {
+  title: "帖子详情",
+  description: "帖子详情",
+};
 
 export default async function Page({
   params,

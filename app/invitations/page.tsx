@@ -2,6 +2,12 @@ import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/session";
 import InvitationsClient from "./InvitationsClient";
 import { getInvitationsByUserId } from "../action/Invitation";
+import type { Metadata } from "next";
+
+const metadata: Metadata = {
+  title: "邀请回答",
+  description: "邀请回答",
+};
 
 export default async function InvitationsPage() {
   // 模拟从数据库或 API 获取邀请数据

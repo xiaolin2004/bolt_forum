@@ -2,6 +2,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { searchPost } from "../action/post";
+import type { Metadata } from "next";
+
+const metadata: Metadata = {
+  title: "搜索结果",
+  description: "搜索结果",
+};
+
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function SearchResults({
@@ -9,7 +16,7 @@ export default async function SearchResults({
 }: {
   searchParams: SearchParams;
 }) {
-  const {q} = (await searchParams);
+  const { q } = await searchParams;
   const results = await searchPost(q as string);
 
   const handlePostClick = (postId: number) => {
