@@ -1,13 +1,22 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from "next/font/local";
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: '论坛首页',
-  description: '一个现代化的论坛系统',
-};
+const inter = localFont({
+  src: [
+    {
+      path: "../public/fonts/extras/woff-hinted/Inter-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/extras/woff-hinted/Inter-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-inter", // 可选：CSS变量名
+});
 
 export default function RootLayout({
   children,
@@ -20,3 +29,4 @@ export default function RootLayout({
     </html>
   );
 }
+

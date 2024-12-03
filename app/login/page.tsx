@@ -6,9 +6,7 @@ export default async function page() {
   const session = await getCurrentSession();
   if (session.session != null) {
     redirect("/");
-  }else{
-    return (
-      <LoginPage />
-    )
+  } else {
+    return <LoginPage />;
   }
-};
+}

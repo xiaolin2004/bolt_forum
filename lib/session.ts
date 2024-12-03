@@ -1,8 +1,4 @@
-import {
-  type user as User,
-  type session as Session,
-  PrismaClient,
-} from "@prisma/client";
+import { type user as User, type session as Session } from "@prisma/client";
 import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
@@ -11,7 +7,6 @@ import { sha256 } from "@oslojs/crypto/sha2";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { prisma } from "@/prisma/client";
-
 
 // Redis 初始化
 import { createClient } from "redis";
