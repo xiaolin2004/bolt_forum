@@ -6,6 +6,7 @@ import {
   generateSessionToken,
   createSession,
   setSessionTokenCookie,
+  invalidateSession,
 } from "../../lib/session";
 import {
   cardUser,
@@ -16,6 +17,9 @@ import {
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/prisma/client";
 import { redirect } from "next/navigation";
+import { encodeHexLowerCase } from "@oslojs/encoding";
+import { sha256 } from "@oslojs/crypto/sha2";
+import { cookies } from "next/headers";
 
 /**
  * Get the current user's card details.
@@ -53,14 +57,28 @@ export async function getCardUser(): Promise<cardUser> {
  * Log out the current user.
  */
 export async function Logout(): Promise<void> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session")?.value ?? null;
+
+  if (token) {
+    // 计算 sessionId
+    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+
+    // 删除 Redis 中的 session 数据
+    await invalidateSession(sessionId);
+  }
+
+  // 删除浏览器中的 session cookie
   await deleteSessionTokenCookie();
+
+  // 重新验证页面路径
   revalidatePath("/login");
 }
 
 /**
  * Log in a user with email and password.
  */
-export async function logIn(
+export async function LogIn(
   prevState: { message: string },
   formData: FormData
 ): Promise<{ message: string }> {

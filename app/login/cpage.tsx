@@ -6,7 +6,7 @@ import { useActionState, useState } from "react";
 // @ts-expect-error
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { logIn } from "../action/User";
+import { LogIn } from "../action/User";
 
 const initialState = {
   message: "",
@@ -26,7 +26,7 @@ function LoginButton() {
 }
 
 export default function LoginPage() {
-  const [state, formAction] = useActionState(logIn, initialState);
+  const [state, formAction] = useActionState(LogIn, initialState);
 
   return (
     <>

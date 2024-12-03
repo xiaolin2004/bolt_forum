@@ -12,69 +12,102 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 const prisma = new PrismaClient();
+
+// Redis 初始化
+import { createClient } from "redis";
+
+const redis = createClient({
+  url: process.env.REDIS_URL || "redis://localhost:16379",
+});
+
+redis.on("error", (error) => console.error("Redis Error:", error));
+
+(async () => {
+  await redis.connect();
+})();
+
+// 工具函数
+async function redisSet(key: string, value: any, expireSeconds: number) {
+  await redis.set(key, JSON.stringify(value), { EX: expireSeconds });
+}
+
+async function redisGet<T>(key: string): Promise<T | null> {
+  const data = await redis.get(key);
+  return data ? JSON.parse(data) : null;
+}
+
+// Token 生成
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
   crypto.getRandomValues(bytes);
-  const token = encodeBase32LowerCaseNoPadding(bytes);
-  return token;
+  return encodeBase32LowerCaseNoPadding(bytes);
 }
 
+// 创建会话
 export async function createSession(
   token: string,
   userId: number
 ): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+  const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 5; // 5天过期
+
   const session: Session = {
     id: sessionId,
-    userId: userId,
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+    userId,
+    expiresAt: new Date(expiresAt),
   };
-  await prisma.session.create({
-    data: session,
-  });
+
+  // 存储到 Redis
+  await redisSet(
+    `session:${sessionId}`,
+    session,
+    Math.floor((expiresAt - Date.now()) / 1000)
+  );
+
   return session;
 }
 
+// 验证会话
 export async function validateSessionToken(
   token: string
 ): Promise<SessionValidationResult> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const result = await prisma.session.findUnique({
-    where: {
-      id: sessionId,
-    },
-    include: {
-      user: true,
-    },
-  });
-  if (result == null) {
+
+  // 从 Redis 获取会话
+  const session = await redisGet<Session>(`session:${sessionId}`);
+  if (!session) {
     return { session: null, user: null };
   }
-  const { user, ...session } = result;
+
+  // 转换 expiresAt 为 Date 对象
+  session.expiresAt = new Date(session.expiresAt);
+
+  // 检查会话是否过期
   if (Date.now() >= session.expiresAt.getTime()) {
-    await prisma.session.delete({ where: { id: sessionId } });
+    await redis.del(`session:${sessionId}`);
     return { session: null, user: null };
   }
-  if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 15) {
-    session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
-    await prisma.session.update({
-      where: { id: sessionId },
-      data: {
-        expiresAt: session.expiresAt,
-      },
-    });
+
+  // 如果会话快过期，延长有效期
+  if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 2) {
+    session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 5);
+    await redisSet(
+      `session:${sessionId}`,
+      session,
+      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000)
+    );
   }
-  return { session, user };
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  return user ? { session, user } : { session: null, user: null };
 }
 
+// 使会话失效
 export async function invalidateSession(sessionId: string): Promise<void> {
-  await prisma.session.delete({ where: { id: sessionId } });
+  await redis.del(`session:${sessionId}`);
 }
 
-export type SessionValidationResult =
-  | { session: Session; user: User }
-  | { session: null; user: null };
-
+// 设置会话 Cookie
 export async function setSessionTokenCookie(
   token: string,
   expiresAt: Date
@@ -89,6 +122,7 @@ export async function setSessionTokenCookie(
   });
 }
 
+// 删除会话 Cookie
 export async function deleteSessionTokenCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("session", "", {
@@ -100,14 +134,19 @@ export async function deleteSessionTokenCookie(): Promise<void> {
   });
 }
 
+// 获取当前会话
 export const getCurrentSession = cache(
   async (): Promise<SessionValidationResult> => {
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value ?? null;
-    if (token == null) {
+    if (!token) {
       return { session: null, user: null };
     }
-    const result = await validateSessionToken(token);
-    return result;
+    return await validateSessionToken(token);
   }
 );
+
+// 类型定义
+export type SessionValidationResult =
+  | { session: Session; user: User }
+  | { session: null; user: null };
