@@ -4,7 +4,7 @@ import { prisma } from "@/prisma/client";
 import { Announcement } from "@/types/announcement";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "公告详情",
   description: "公告详情",
 };

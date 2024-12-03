@@ -4,7 +4,7 @@ import InvitationsClient from "./InvitationsClient";
 import { getInvitationsByUserId } from "../action/Invitation";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "邀请回答",
   description: "邀请回答",
 };

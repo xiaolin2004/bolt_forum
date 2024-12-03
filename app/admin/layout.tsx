@@ -3,7 +3,7 @@ import { getCurrentSession } from "../../lib/session";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "管理后台",
   description: "管理后台",
 };

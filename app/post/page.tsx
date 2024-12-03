@@ -3,7 +3,7 @@ import PostDetail from "@/app/post/component/post-detail";
 import { prisma } from "@/prisma/client";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "帖子详情",
   description: "帖子详情",
 };

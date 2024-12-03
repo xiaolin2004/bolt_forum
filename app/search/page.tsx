@@ -4,7 +4,7 @@ import Image from "next/image";
 import { searchPost } from "../action/post";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "搜索结果",
   description: "搜索结果",
 };

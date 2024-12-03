@@ -3,7 +3,7 @@ import { getCurrentSession } from "../../lib/session";
 import LoginPage from "./cpage";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "登录",
   description: "登录",
 };

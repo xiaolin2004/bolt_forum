@@ -10,7 +10,7 @@ import { getAnnouncement } from "./action/Announcement";
 import { Logout } from "./action/User";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "首页",
   description: "这是首页",
 };

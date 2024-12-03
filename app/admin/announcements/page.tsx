@@ -4,7 +4,7 @@ import { ManageAnnouncement } from "@/types/announcement";
 import { getCurrentSession } from "@/lib/session";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "公告管理",
   description: "公告管理",
 };

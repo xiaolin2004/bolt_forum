@@ -2,7 +2,7 @@ import { getPostList } from "@/app/action/post";
 import PostManagement from "./cpage";
 import type { Metadata } from "next";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "帖子管理",
   description: "帖子管理",
 };
