@@ -118,6 +118,7 @@ export async function Register(
   const email = formData.get("email")?.toString().trim();
   const password = formData.get("password")?.toString().trim();
   const confirmPassword = formData.get("confirmPassword")?.toString().trim();
+  const isCompanyRepresentative = formData.get("isCompanyRepresentative") === "on";
 
   if (!name || !email || !password || !confirmPassword) {
     return { message: "All fields are required" };
@@ -140,6 +141,7 @@ export async function Register(
       created_at: new Date(),
       updated_at: new Date(),
       avatar: "https://api.dicebear.com/9.x/pixel-art/svg",
+      user_type_id: isCompanyRepresentative ? 3 : 1, // 动态设置 user_type_id
     },
   });
 

@@ -28,6 +28,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    isCompanyRepresentative: false,
   });
   const [state, formAction] = useActionState(Register, initialState);
 
@@ -48,7 +49,7 @@ export default function RegisterPage() {
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label
-                htmlFor="email"
+                htmlFor="name"
                 className="block text-sm font-medium text-gray-700"
               >
                 用户名
@@ -122,11 +123,35 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
+                  setFormData({
+                    ...formData,
+                    confirmPassword: e.target.value,
+                  })
                 }
                 className="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="请再次输入密码"
               />
+            </div>
+            <div className="flex items-center">
+              <input
+                id="isCompanyRepresentative"
+                name="isCompanyRepresentative"
+                type="checkbox"
+                checked={formData.isCompanyRepresentative}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    isCompanyRepresentative: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="isCompanyRepresentative"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                企业代表
+              </label>
             </div>
           </div>
 

@@ -83,7 +83,7 @@ export default function PostDetail({
                   onClick={() => setIsPostDeleteModalOpen(true)}
                   className="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50"
                 >
-                  删除帖子
+                  删除需求
                 </button>
               </div>
             )}

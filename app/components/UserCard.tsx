@@ -21,7 +21,7 @@ export default function UserCard({ user }: { user: User }) {
     if (user.isLoggedIn) {
       window.open(`/user/${user.id?.toString()}`, "_blank");
     } else {
-      window.open("/login", "_blank");
+      redirect("/login");
     }
   };
 
