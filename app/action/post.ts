@@ -4,6 +4,7 @@ import { getCurrentSession } from "../../lib/session";
 import { prisma } from "@/prisma/client";
 import { revalidatePath } from "next/cache";
 import { ListPost, SearchResult } from "../../types/post";
+import { redirect } from "next/navigation";
 
 /**
  * Create a new post.
@@ -26,8 +27,8 @@ export async function createPost(formData: FormData): Promise<void> {
       updated_at: new Date(),
     },
   });
-
-  revalidatePath("/posts");
+  revalidatePath("/");
+  redirect("/");
 }
 
 /**
@@ -132,8 +133,42 @@ export async function searchPost(keyword: string): Promise<SearchResult[]> {
     title: post.title,
     content: post.content,
     author: post.user?.name ?? "Unknown",
-    avatar: post.user?.avatar ?? "",
+    avatar: post.user?.avatar ?? "https://api.dicebear.com/9.x/pixel-art/svg",
     timestamp: post.updated_at.toISOString().replace("T", " ").substring(0, 16),
     replies: post._count.reply,
+  }));
+}
+
+/**
+ * Get a list of posts with additional metadata by UserId.
+ */
+export async function getUserPost(id:number): Promise<ListPost[]> {
+  const posts = await prisma.post.findMany({
+    where: { author: id },
+    include: {
+      user: {
+        select: { name: true },
+      },
+      _count: {
+        select: { reply: true },
+      },
+      reply: {
+        orderBy: { created_at: "desc" },
+        take: 1,
+        select: { created_at: true },
+      },
+    },
+  });
+
+  return posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    author: post.user?.name ?? "Unknown",
+    replies: post._count.reply,
+    lastReply:
+      post.reply[0]?.created_at
+        ?.toISOString()
+        .replace("T", " ")
+        .substring(0, 16) ?? "",
   }));
 }

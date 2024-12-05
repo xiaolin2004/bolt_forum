@@ -48,7 +48,7 @@ export async function getCardUser(): Promise<cardUser> {
   return {
     id: user?.id,
     name: user?.name || "",
-    avatar: user?.avatar || "/publichttps://avatars.dicebear.com/api/adventurer/random.svg",
+    avatar: user?.avatar || "https://api.dicebear.com/9.x/pixel-art/svg",
     isLoggedIn: Boolean(user),
   };
 }
@@ -139,6 +139,7 @@ export async function Register(
       password,
       created_at: new Date(),
       updated_at: new Date(),
+      avatar: "https://api.dicebear.com/9.x/pixel-art/svg",
     },
   });
 
@@ -208,7 +209,7 @@ export async function getProfileUser(id: number): Promise<UserProfile | null> {
   return {
     id: user.id,
     name: user.name,
-    avatar: user.avatar || "/publichttps://avatars.dicebear.com/api/adventurer/random.svg",
+    avatar: user.avatar || "https://api.dicebear.com/9.x/pixel-art/svg",
     email: user.email,
     phone: user.phone || "",
     tags,
@@ -233,9 +234,9 @@ export async function getUserList(): Promise<ListUser[]> {
   return users.map((user) => ({
     id: user.id,
     name: user.name,
-    avatar: user.avatar || "/publichttps://avatars.dicebear.com/api/adventurer/random.svg",
+    avatar: user.avatar || "https://api.dicebear.com/9.x/pixel-art/svg",
     email: user.email,
-    created_at: user.created_at.toISOString().substring(0, 16),
+    created_at: user.created_at.toISOString().replace("T", " ").substring(0, 16),
     user_type_id: user.user_type_id,
   }));
 }
@@ -265,6 +266,6 @@ export async function getInvitationUsers(): Promise<InvitationUser[]> {
   return users.map((user) => ({
     id: user.id.toString(),
     name: user.name,
-    avatar: user.avatar || "/publichttps://avatars.dicebear.com/api/adventurer/random.svgebear.com/api/adventurer/random.svg",
+    avatar: user.avatar || "https://api.dicebear.com/9.x/pixel-art/svg",
   }));
 }

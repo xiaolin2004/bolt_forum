@@ -6,6 +6,7 @@ export type PostForm = {
 export type Reply = {
   id: number;
   author: string;
+  author_id: number;
   content: string;
   avatar: string;
   timestamp: string;
@@ -15,6 +16,7 @@ export type Post = {
   id: string;
   title: string;
   content: string;
+  author_id: number;
   author: string;
   avatar: string;
   timestamp: string;

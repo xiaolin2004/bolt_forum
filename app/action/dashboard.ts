@@ -58,13 +58,13 @@ export async function getRecentActivity(): Promise<DashboardActivity> {
       id: post.id,
       title: post.title,
       authorName: post.user.name,
-      avatar: "https://api.dicebear.com/9.x/pixel-art/svg",
-      createdAt: post.created_at.toISOString().substring(0, 16),
+      avatar: post.user.avatar|| "https://api.dicebear.com/9.x/pixel-art/svg",
+      createdAt: post.created_at.toISOString().replace("T", " ").substring(0, 16),
     })),
     recentAnnouncements: recentAnnouncements.map((announcement) => ({
       id: announcement.id,
       title: announcement.title,
-      updatedAt: announcement.updated_at.toISOString().substring(0, 16),
+      updatedAt: announcement.updated_at.toISOString().replace("T", " ").substring(0, 16),
     })),
   };
 }

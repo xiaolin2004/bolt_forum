@@ -3,7 +3,10 @@ import Image from "next/image";
 import { getCurrentSession } from "@/lib/session";
 import { getProfileUser } from "@/app/action/User";
 import EditButton from "./components/edit-botton";
+import PostList from "@/app/components/PostList";
 import type { Metadata } from "next";
+import { getUserPost } from "@/app/action/post";
+
 
 export const metadata: Metadata = {
   title: "用户信息",
@@ -26,9 +29,14 @@ export default async function ProfilePage({
   if (v_user == null) {
     return <div>用户不存在</div>;
   }
+
+  // 获取用户发布的帖子
+  const userPosts = await getUserPost(user_id);
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+        {/* 用户信息 */}
         <div className="flex items-center space-x-6 mb-8">
           <div className="relative w-24 h-24 rounded-full overflow-hidden">
             <Image
@@ -44,6 +52,7 @@ export default async function ProfilePage({
           </div>
         </div>
 
+        {/* 基本信息 */}
         <div className="space-y-6">
           <div>
             <h2 className="text-lg font-semibold mb-2">基本信息</h2>
@@ -73,6 +82,16 @@ export default async function ProfilePage({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* 用户发布的帖子 */}
+      <div className="max-w-2xl mx-auto mt-8 bg-white rounded-lg shadow-md p-8">
+        <h2 className="text-lg font-semibold mb-4">发布的帖子</h2>
+        {userPosts.length > 0 ? (
+          <PostList posts={userPosts} />
+        ) : (
+          <p className="text-gray-600">用户尚未发布任何帖子。</p>
+        )}
       </div>
     </div>
   );

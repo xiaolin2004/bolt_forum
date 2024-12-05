@@ -156,7 +156,7 @@ export default function InvitationsClient({
                     <Image
                       src={
                         invitation.inviter.avatar ||
-                        "https://avatars.dicebear.com/api/adventurer/random.svgebear.com/api/adventurer/random.svg"
+                        "https://api.dicebear.com/9.x/pixel-art/svg"
                       }
                       alt={invitation.inviter.name}
                       fill

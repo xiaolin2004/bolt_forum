@@ -36,7 +36,7 @@ export default function PostList({posts}:{posts:ListPost[]}) {
               </div>
             </div>
             <div className="mt-2 text-sm text-gray-500 flex justify-between">
-              <span>作者: {post.author}</span>
+              <span>发布者: {post.author}</span>
               <span>最后回复: {post.lastReply}</span>
             </div>
           </div>

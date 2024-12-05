@@ -83,9 +83,9 @@ export async function getInvitationsByUserId(
       postTitle: invitation.post.title,
       inviter: {
         name: invitation.post.user.name,
-        avatar: invitation.post.user.avatar || "", // Default avatar fallback
+        avatar: invitation.post.user.avatar || "https://api.dicebear.com/9.x/pixel-art/svg", // Default avatar fallback
       },
-      timestamp: invitation.timestamp.toISOString(),
+      timestamp: invitation.timestamp.toISOString().replace("T", " ").substring(0, 16),
       status: invitation.status.value as "pending" | "accepted" | "declined", // Type-safe mapping
     }));
   } catch (error) {

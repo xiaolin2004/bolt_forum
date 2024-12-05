@@ -10,7 +10,6 @@ export default function Sidebar() {
     { name: '首页', icon: '🏠', path: '/' },
     { name: '热门讨论', icon: '🔥', path: '/hot' },
     { name: '最新发布', icon: '⭐', path: '/latest' },
-    { name: '我的需求', icon: '📝', path: '/my-posts' },
     { name: '邀请回答', icon: '✉️', path: '/invitations' },
   ];
 

@@ -7,7 +7,7 @@ import { createReply } from "@/app/action/post";
 import ReplySubmitButton from "./reply-submit-button";
 import { Reply, Post } from "@/types/post";
 
-export default function PostDetail({ id, post }: { id: number; post: Post }) {
+export default function PostDetail({ visitor,id, post }: {visitor:number, id: number; post: Post }) {
   const [isReplying, setIsReplying] = useState(false);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -24,13 +24,13 @@ export default function PostDetail({ id, post }: { id: number; post: Post }) {
             >
               ← 返回首页
             </Link>
-            <button
+            {visitor === post.author_id &&(<button
               onClick={() => setIsInviteModalOpen(true)}
               className="inline-flex items-center px-4 py-2 border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50"
             >
               <span className="mr-2">✉️</span>
               邀请回答
-            </button>
+            </button>)}
           </div>
 
           <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
