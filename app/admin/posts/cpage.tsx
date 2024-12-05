@@ -51,8 +51,7 @@ export default function PostManagement({ posts }: { posts: ListPost[] }) {
           </div>
           <select className="form-select rounded-md">
             <option value="">所有分类</option>
-            <option value="tech">技术讨论</option>
-            <option value="life">生活分享</option>
+            <option value="tech">需求</option>
           </select>
         </div>
       </div>

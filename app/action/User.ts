@@ -245,7 +245,7 @@ export async function getUserList(): Promise<ListUser[]> {
       avatar: true,
       email: true,
       created_at: true,
-      user_type_id: true,
+      user_types:{select:{name:true}} ,
     },
   });
 
@@ -255,7 +255,7 @@ export async function getUserList(): Promise<ListUser[]> {
     avatar: user.avatar || "https://api.dicebear.com/9.x/pixel-art/svg",
     email: user.email,
     created_at: user.created_at.toISOString().replace("T", " ").substring(0, 16),
-    user_type_id: user.user_type_id,
+    user_type: user.user_types.name
   }));
 }
 

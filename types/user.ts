@@ -29,7 +29,7 @@ export type ListUser = {
   avatar: string;
   email: string;
   created_at: string;
-  user_type_id: number;
+  user_type: string;
 }
 
 export type InvitationUser = {

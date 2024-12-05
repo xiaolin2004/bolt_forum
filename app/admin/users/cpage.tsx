@@ -90,7 +90,7 @@ export default function UserManagement({ users }: { users: ListUser[] }) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {user.user_type_id}
+                    {user.user_type}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
