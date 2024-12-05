@@ -8,7 +8,7 @@ export default function CreatePost() {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">发布新帖子</h1>
+            <h1 className="text-2xl font-bold">发布新需求</h1>
             <Link
               href="/"
               className="text-blue-600 hover:text-blue-800"
@@ -26,7 +26,7 @@ export default function CreatePost() {
                 id="title"
                 name="title"
                 type="text"
-                placeholder="请输入帖子标题"
+                placeholder="请输入需求标题"
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -39,7 +39,7 @@ export default function CreatePost() {
               <textarea
                 id="content"
                 name="content"
-                placeholder="请输入帖子内容..."
+                placeholder="请输入需求内容..."
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={12}
                 required

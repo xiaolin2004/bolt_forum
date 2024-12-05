@@ -35,7 +35,7 @@ export default function InvitationsClient({
         )
       );
 
-      // 接受邀请时跳转到帖子详情
+      // 接受邀请时跳转到需求详情
       if (accept) {
         const invitation = invitations.find((inv) => inv.id === invitationId);
         if (invitation) {

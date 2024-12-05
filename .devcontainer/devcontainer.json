@@ -15,7 +15,19 @@
 	"runArgs": [
 		"--network=host"
 	],
-	"remoteUser": "node"
+	"remoteUser": "node",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Prisma.prisma",
+				"mutantdino.resourcemonitor",
+				"redhat.vscode-yaml",
+				"christian-kohler.npm-intellisense",
+				"Nuxtr.nuxt-vscode-extentions",
+				"Nuxtr.nuxtr-vscode"
+			]
+		}
+	}
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

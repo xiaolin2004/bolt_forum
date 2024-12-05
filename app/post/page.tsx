@@ -4,8 +4,8 @@ import { prisma } from "@/prisma/client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "帖子详情",
-  description: "帖子详情",
+  title: "需求详情",
+  description: "需求详情",
 };
 
 export default async function Page({
@@ -15,14 +15,14 @@ export default async function Page({
 }) {
   const id = Number((await params).id);
 
-  // 合并查询，获取帖子及其相关信息
+  // 合并查询，获取需求及其相关信息
   const postWithDetails = await prisma.post.findUnique({
     where: {
       id: id,
     },
     include: {
       user: {
-        // 帖子作者信息
+        // 需求作者信息
         select: {
           name: true,
           avatar: true,
@@ -58,7 +58,7 @@ export default async function Page({
     timestamp: reply.created_at?.toISOString() ?? "",
   }));
 
-  // 格式化帖子数据，确保符合 Post 类型
+  // 格式化需求数据，确保符合 Post 类型
   const attr_post: Post = {
     id: postWithDetails.id.toString(),
     title: postWithDetails.title,

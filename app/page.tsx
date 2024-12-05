@@ -38,15 +38,20 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-gray-100">
       <div className="container mx-auto py-6 px-4">
-        <div className="flex justify-between items-center mb-6">
+        {/* 搜索栏和创建按钮部分 */}
+        <div className="flex justify-center items-center mb-6 gap-4">
           <SearchBar />
           <CreatePostButton />
         </div>
+
+        {/* 主体内容部分 */}
         <div className="flex gap-6">
           <Sidebar />
           <PostList posts={postList} />
           <Announcement announcements={announcement} />
         </div>
+
+        {/* 用户卡片和退出按钮 */}
         <div className="fixed bottom-0 left-0 p-4">
           <UserCard user={cardUser} />
           <LogoutButton />

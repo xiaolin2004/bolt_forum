@@ -30,7 +30,7 @@ export default async function AdminLayout({
   const menuItems = [
     { path: "/admin", label: "控制台", icon: "📊" },
     { path: "/admin/users", label: "用户管理", icon: "👥" },
-    { path: "/admin/posts", label: "帖子管理", icon: "📝" },
+    { path: "/admin/posts", label: "需求管理", icon: "📝" },
     { path: "/admin/announcements", label: "公告管理", icon: "📢" },
   ];
 

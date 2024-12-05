@@ -5,7 +5,7 @@ import { cardUser as User } from "../../types/user";
 import { Logout } from "../action/User";
 
 
-function LogoutButton(){
+function LogoutButton() {
   return (
     <button
       onClick={Logout}
@@ -19,9 +19,9 @@ function LogoutButton(){
 export default function UserCard({ user }: { user: User }) {
   const handleClick = () => {
     if (user.isLoggedIn) {
-      redirect(`/user/${user.id?.toString()}`);
+      window.open(`/user/${user.id?.toString()}`, "_blank");
     } else {
-      redirect("/login");
+      window.open("/login", "_blank");
     }
   };
 

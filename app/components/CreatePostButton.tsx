@@ -11,7 +11,7 @@ export default function CreatePostButton() {
       className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors shadow-md flex items-center"
     >
       <span className="mr-2">+</span>
-      发布帖子
+      发布需求
     </button>
   );
 }

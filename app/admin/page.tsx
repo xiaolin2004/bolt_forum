@@ -35,9 +35,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "总用户数", value: stats.totalUsers, icon: "👥" },
-          { label: "总帖子数", value: stats.totalPosts, icon: "📝" },
+          { label: "总需求数", value: stats.totalPosts, icon: "📝" },
           { label: "今日新增用户", value: stats.newUsersToday, icon: "📈" },
-          { label: "今日新增帖子", value: stats.newPostsToday, icon: "📊" },
+          { label: "今日新增需求", value: stats.newPostsToday, icon: "📊" },
         ].map((item) => (
           <div
             key={item.label}
@@ -66,11 +66,11 @@ export default function AdminDashboard() {
 
       {/* 最近活动 */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        {/* 最近帖子 */}
+        {/* 最近需求 */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              最近帖子
+              最近需求
             </h3>
             <div className="mt-5 space-y-4">
               {activity.recentPosts.map((post) => (
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-gray-500">
                       <span className="font-medium">{post.authorName}</span>{" "}
-                      发布了新帖子{" "}
+                      发布了新需求{" "}
                       <span className="ml-2 text-gray-400">
                         {post.createdAt}
                       </span>

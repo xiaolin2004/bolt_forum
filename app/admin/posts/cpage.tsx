@@ -7,7 +7,7 @@ import { ListPost } from "@/types/post";
 export default function PostManagement({ posts }: { posts: ListPost[] }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<ListPost | null>(null);
-  const [allPosts, setAllPosts] = useState(posts); // 动态管理帖子列表
+  const [allPosts, setAllPosts] = useState(posts); // 动态管理需求列表
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 10;
 
@@ -21,7 +21,7 @@ export default function PostManagement({ posts }: { posts: ListPost[] }) {
     e.preventDefault(); // 防止默认行为
 
     if (!postToDelete) {
-      console.error("没有选择要删除的帖子！");
+      console.error("没有选择要删除的需求！");
       return;
     }
 
@@ -30,22 +30,22 @@ export default function PostManagement({ posts }: { posts: ListPost[] }) {
       await deletePost(formData); // 调用删除 API
       setAllPosts((prevPosts) =>
         prevPosts.filter((p) => p.id !== postToDelete.id)
-      ); // 更新帖子列表
+      ); // 更新需求列表
       setIsDeleteModalOpen(false); // 关闭模态框
     } catch (error) {
-      console.error("删除帖子失败：", error);
+      console.error("删除需求失败：", error);
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="sm:flex sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">帖子管理</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">需求管理</h1>
         <div className="mt-4 sm:mt-0 flex space-x-3">
           <div className="relative rounded-md shadow-sm">
             <input
               type="text"
-              placeholder="搜索帖子..."
+              placeholder="搜索需求..."
               className="form-input rounded-md w-full sm:w-64"
             />
           </div>
@@ -62,7 +62,7 @@ export default function PostManagement({ posts }: { posts: ListPost[] }) {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                帖子信息
+                需求信息
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 分类
@@ -123,7 +123,7 @@ export default function PostManagement({ posts }: { posts: ListPost[] }) {
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-semibold mb-4">确认删除</h2>
-            <p className="mb-4">你确定要删除这个帖子吗？此操作无法撤销。</p>
+            <p className="mb-4">你确定要删除这个需求吗？此操作无法撤销。</p>
             <form onSubmit={handleDelete}>
               <input type="hidden" name="id" value={postToDelete?.id || ""} />
               <div className="flex justify-end space-x-3">

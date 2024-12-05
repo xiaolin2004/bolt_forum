@@ -89,7 +89,7 @@ export default async function SearchResults({
                       href="/post/create"
                       className="text-blue-500 hover:text-blue-600 ml-1"
                     >
-                      发布新帖子
+                      发布新需求
                     </Link>
                   </p>
                 </div>

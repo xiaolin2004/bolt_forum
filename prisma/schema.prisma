@@ -48,7 +48,7 @@ model post_assigned_user {
 
 model post_invite_user {
   id         Int      @id @default(autoincrement())
-  post_id    Int // 帖子 ID
+  post_id    Int // 需求 ID
   invitee_id Int // 被邀请的用户 ID
   status_id  Int      @default(1) // 邀请状态，引用 invitation_status
   timestamp  DateTime @default(now()) // 邀请时间戳
