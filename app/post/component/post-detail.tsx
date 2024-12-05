@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import InviteUsersModal from "@/app/components/InviteUsersModal";
-import { createReply, deletePost, deleteReply } from "@/app/action/post"; // 假设存在删除函数
+import { createReply } from "@/app/action/post";
+import { deleteReply } from "@/app/action/post"; // 假设存在删除回复的函数
 import ReplySubmitButton from "./reply-submit-button";
 import { Reply, Post } from "@/types/post";
 
@@ -19,15 +20,9 @@ export default function PostDetail({
 }) {
   const [isReplying, setIsReplying] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-
-  // 评论删除状态
   const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [replyToDelete, setReplyToDelete] = useState<Reply | null>(null);
-
-  // 帖子删除状态
-  const [isPostDeleteModalOpen, setIsPostDeleteModalOpen] = useState(false);
-
   const createReplyWithId = createReply.bind(null, id);
 
   const handleDeleteReply = (reply: Reply) => {
@@ -36,27 +31,14 @@ export default function PostDetail({
   };
 
   const handleDeleteConfirmation = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault(); // 阻止默认表单提交行为
     try {
       const formData = new FormData(e.currentTarget);
       await deleteReply(formData); // 假设执行删除操作
       post.replies = post.replies.filter((r) => r.id !== replyToDelete?.id); // 更新前端数据
-      setIsDeleteModalOpen(false);
+      setIsDeleteModalOpen(false); // 关闭模态框
     } catch (error) {
       console.error("删除回复失败:", error);
-    }
-  };
-
-  const handleDeletePost = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData(e.currentTarget);
-      await deletePost(formData); // 假设执行帖子删除操作
-      setIsPostDeleteModalOpen(false); // 关闭模态框
-      // 跳转回首页或提示用户
-      window.location.href = "/";
-    } catch (error) {
-      console.error("删除帖子失败:", error);
     }
   };
 
@@ -71,8 +53,9 @@ export default function PostDetail({
             >
               ← 返回首页
             </Link>
-            {visitor === post.author_id && (
-              <div className="flex space-x-4">
+            {visitor != null &&
+              post.author_id != null &&
+              visitor === post.author_id && (
                 <button
                   onClick={() => setIsInviteModalOpen(true)}
                   className="inline-flex items-center px-4 py-2 border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50"
@@ -80,14 +63,7 @@ export default function PostDetail({
                   <span className="mr-2">✉️</span>
                   邀请开发者
                 </button>
-                <button
-                  onClick={() => setIsPostDeleteModalOpen(true)}
-                  className="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50"
-                >
-                  删除帖子
-                </button>
-              </div>
-            )}
+              )}
           </div>
 
           <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
@@ -185,8 +161,8 @@ export default function PostDetail({
                     <button
                       onClick={() => handleDeleteReply(reply)}
                       className={`absolute top-0 right-0 mt-6 px-3 py-1 rounded-md text-sm ${reply.author_id === visitor
-                        ? "bg-red-500 text-white hover:bg-red-600"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          ? "bg-red-500 text-white hover:bg-red-600"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                       disabled={reply.author_id !== visitor}
                     >
@@ -207,8 +183,7 @@ export default function PostDetail({
         postTitle={post.title}
       />
 
-      {/* 帖子删除模态框 */}
-      {isPostDeleteModalOpen && (
+      {isDeleteModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div
@@ -227,17 +202,17 @@ export default function PostDetail({
               <div>
                 <div className="mt-3 text-center sm:mt-5">
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    确认删除帖子
+                    确认删除
                   </h3>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      你确定要删除这个帖子吗？此操作无法撤销。
+                      你确定要删除这个回复吗？此操作无法撤销。
                     </p>
                   </div>
                 </div>
               </div>
-              <form onSubmit={handleDeletePost}>
-                <input type="hidden" name="id" value={post.id} />
+              <form onSubmit={handleDeleteConfirmation}>
+                <input type="hidden" name="id" value={replyToDelete?.id} />
                 <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
@@ -248,7 +223,7 @@ export default function PostDetail({
                   <button
                     type="button"
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => setIsPostDeleteModalOpen(false)}
+                    onClick={() => setIsDeleteModalOpen(false)}
                   >
                     取消
                   </button>
