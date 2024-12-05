@@ -58,6 +58,24 @@ export async function createReply(
 }
 
 /**
+ * Delete a reply by ID.
+ */
+export async function deleteReply(formData: FormData): Promise<void> {
+  const replyId = parseInt(formData.get("id")?.toString() ?? "0", 10);
+
+  if (isNaN(replyId) || replyId <= 0) {
+    throw new Error("Invalid reply ID.");
+  }
+
+  await prisma.reply.delete({
+    where: { id: replyId },
+  });
+
+  revalidatePath(`/post/${formData.get("postId")}`);
+}
+
+
+/**
  * Get a list of posts with additional metadata.
  */
 export async function getPostList(): Promise<ListPost[]> {
