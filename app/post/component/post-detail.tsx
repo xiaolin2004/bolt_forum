@@ -4,8 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import InviteUsersModal from "@/app/components/InviteUsersModal";
-import { createReply } from "@/app/action/post";
-import { deleteReply,deletePost } from "@/app/action/post"; // 假设存在删除回复的函数
+import { createReply, deleteReply, deletePost, updatePost } from "@/app/action/post";
 import ReplySubmitButton from "./reply-submit-button";
 import { Reply, Post } from "@/types/post";
 
@@ -21,41 +20,66 @@ export default function PostDetail({
   const [isReplying, setIsReplying] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
-  const [isReplyDeleteModalOpen, setIsReplyDeleteModalOpen] = useState(false);
-  const [replyToDelete, setReplyToDelete] = useState<Reply | null>(null);
-
-  // 帖子删除状态
-  const [isPostDeleteModalOpen, setIsPostDeleteModalOpen] = useState(false);
+  const [modalData, setModalData] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: async () => { },
+  });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentPost, setCurrentPost] = useState<Post | null>(null);
 
   const createReplyWithId = createReply.bind(null, id);
 
-  const handleDeleteReply = (reply: Reply) => {
-    setReplyToDelete(reply);
-    setIsReplyDeleteModalOpen(true);
+  const openDeletePostModal = () => {
+    setModalData({
+      isOpen: true,
+      title: "确认删除帖子",
+      message: "你确定要删除这个帖子吗？此操作无法撤销。",
+      onConfirm: async () => {
+        try {
+          const formData = new FormData();
+          formData.append("id", post.id.toString());
+          await deletePost(formData);
+          setModalData((prev) => ({ ...prev, isOpen: false }));
+          window.location.href = "/";
+        } catch (error) {
+          console.error("删除帖子失败:", error);
+        }
+      },
+    });
   };
 
-  const handleDeletePost = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData(e.currentTarget);
-      await deletePost(formData); // 假设执行帖子删除操作
-      setIsPostDeleteModalOpen(false); // 关闭模态框
-      // 跳转回首页或提示用户
-      window.location.href = "/";
-    } catch (error) {
-      console.error("删除帖子失败:", error);
-    }
+  const openEditPostModal = () => {
+    setCurrentPost(post);
+    setIsEditModalOpen(true);
   };
 
-  const handleDeleteConfirmation = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // 阻止默认表单提交行为
+  const openDeleteReplyModal = (reply: Reply) => {
+    setModalData({
+      isOpen: true,
+      title: "确认删除回复",
+      message: "你确定要删除这个回复吗？此操作无法撤销。",
+      onConfirm: async () => {
+        try {
+          const formData = new FormData();
+          formData.append("id", reply.id.toString());
+          await deleteReply(formData);
+          post.replies = post.replies.filter((r) => r.id !== reply.id);
+          setModalData((prev) => ({ ...prev, isOpen: false }));
+        } catch (error) {
+          console.error("删除回复失败:", error);
+        }
+      },
+    });
+  };
+
+  const handleUpdatePost = async (formData: FormData) => {
     try {
-      const formData = new FormData(e.currentTarget);
-      await deleteReply(formData); // 假设执行删除操作
-      post.replies = post.replies.filter((r) => r.id !== replyToDelete?.id); // 更新前端数据
-      setIsReplyDeleteModalOpen(false); // 关闭模态框
+      await updatePost(formData);
+      setIsEditModalOpen(false);
     } catch (error) {
-      console.error("删除回复失败:", error);
+      console.error("更新帖子失败:", error);
     }
   };
 
@@ -80,7 +104,13 @@ export default function PostDetail({
                   邀请开发者
                 </button>
                 <button
-                  onClick={() => setIsPostDeleteModalOpen(true)}
+                  onClick={openEditPostModal}
+                  className="inline-flex items-center px-4 py-2 border border-green-500 text-green-500 rounded-md hover:bg-green-50"
+                >
+                  编辑需求
+                </button>
+                <button
+                  onClick={openDeletePostModal}
                   className="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50"
                 >
                   删除需求
@@ -94,10 +124,7 @@ export default function PostDetail({
           <div className="flex items-center mb-4">
             <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
               <Image
-                src={
-                  post.avatar ||
-                  "https://api.dicebear.com/9.x/pixel-art/svg"
-                }
+                src={post.avatar || "https://api.dicebear.com/9.x/pixel-art/svg"}
                 alt={post.author}
                 fill
                 className="object-cover"
@@ -130,7 +157,6 @@ export default function PostDetail({
                 placeholder="写下你的回复..."
                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-
               <div className="mt-2 flex justify-end space-x-2">
                 <button
                   type="button"
@@ -182,10 +208,10 @@ export default function PostDetail({
                   </button>
                   {activeReplyId === reply.id && (
                     <button
-                      onClick={() => handleDeleteReply(reply)}
+                      onClick={() => openDeleteReplyModal(reply)}
                       className={`absolute top-0 right-0 mt-6 px-3 py-1 rounded-md text-sm ${reply.author_id === visitor
-                          ? "bg-red-500 text-white hover:bg-red-600"
-                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                       disabled={reply.author_id !== visitor}
                     >
@@ -206,108 +232,130 @@ export default function PostDetail({
         postTitle={post.title}
       />
 
-      {isReplyDeleteModalOpen && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
-            >
-              &#8203;
-            </span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <div>
-                <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    确认删除
-                  </h3>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      你确定要删除这个回复吗？此操作无法撤销。
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <form onSubmit={handleDeleteConfirmation}>
-                <input type="hidden" name="id" value={replyToDelete?.id} />
-                <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    删除
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => setIsReplyDeleteModalOpen(false)}
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal {...modalData} onClose={() => setModalData((prev) => ({ ...prev, isOpen: false }))} />
 
-      {/* 删除帖子模态框 */}
-      {isPostDeleteModalOpen && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
+      {isEditModalOpen && (
+        <EditModal
+          post={currentPost}
+          onClose={() => setIsEditModalOpen(false)}
+          onSubmit={handleUpdatePost}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditModal({
+  post,
+  onClose,
+  onSubmit,
+}: {
+  post: Post | null;
+  onClose: () => void;
+  onSubmit: (formData: FormData) => Promise<void>;
+}) {
+  return (
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
+        <h2 className="text-xl font-semibold mb-4">编辑需求</h2>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            formData.append("id", post?.id.toString() || "");
+            await onSubmit(formData);
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              需求标题
+            </label>
+            <input
+              name="title"
+              type="text"
+              defaultValue={post?.title || ""}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              需求内容
+            </label>
+            <textarea
+              rows={4}
+              name="content"
+              defaultValue={post?.content || ""}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
             >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
+              取消
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
             >
-              &#8203;
-            </span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <div>
-                <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    确认删除帖子
-                  </h3>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      你确定要删除这个帖子吗？此操作无法撤销。
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <form onSubmit={handleDeletePost}>
-                <input type="hidden" name="id" value={post.id} />
-                <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    删除
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => setIsPostDeleteModalOpen(false)}
-                  >
-                    取消
-                  </button>
-                </div>
-              </form>
-            </div>
+              提交
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmModal({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onClose,
+}: {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => Promise<void>;
+  onClose: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed z-10 inset-0 overflow-y-auto">
+      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
+          &#8203;
+        </span>
+        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+          <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+          <p className="mt-2 text-sm text-gray-500">{message}</p>
+          <div className="mt-5 sm:flex sm:justify-end sm:space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+            >
+              取消
+            </button>
+            <button
+              onClick={onConfirm}
+              className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+            >
+              确认
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

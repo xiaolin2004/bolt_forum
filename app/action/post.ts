@@ -190,3 +190,27 @@ export async function getUserPost(id:number): Promise<ListPost[]> {
         .substring(0, 16) ?? "",
   }));
 }
+
+/**
+ * update a post by ID.
+ */
+export async function updatePost(formData: FormData): Promise<void> {
+  const postId = parseInt(formData.get("id")?.toString() ?? "0", 10);
+  const title = formData.get("title")?.toString().trim() ?? "";
+  const content = formData.get("content")?.toString().trim() ?? "";
+
+  if (isNaN(postId) || postId <= 0) {
+    throw new Error("Invalid post ID.");
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      title,
+      content,
+      updated_at: new Date(),
+    },
+  });
+
+  revalidatePath(`/post/${postId}`);
+}
