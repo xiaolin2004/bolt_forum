@@ -15,6 +15,11 @@ export default function EditProfilePage({
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile>(profile1);
   const [newTag, setNewTag] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [passwordData, setPasswordData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const addTag = () => {
     if (newTag && !profile.tags.includes(newTag)) {
@@ -33,10 +38,29 @@ export default function EditProfilePage({
     }));
   };
 
+  const validatePasswords = () => {
+    if (
+      passwordData.newPassword &&
+      passwordData.newPassword !== passwordData.confirmPassword
+    ) {
+      setErrorMessage("两次输入的密码不一致");
+      return false;
+    }
+    setErrorMessage(""); // 清除错误消息
+    return true;
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (!validatePasswords()) {
+      e.preventDefault(); // 阻止表单提交
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <form
         action={updateProfile.bind(null, profile.id)}
+        onSubmit={handleSubmit}
         className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8"
       >
         <h1 className="text-2xl font-bold mb-6">编辑个人资料</h1>
@@ -46,7 +70,7 @@ export default function EditProfilePage({
           <div className="flex items-center space-x-6">
             <div className="relative w-24 h-24 rounded-full overflow-hidden">
               <Image
-                src= "https://api.dicebear.com/9.x/pixel-art/svg"
+                src="https://api.dicebear.com/9.x/pixel-art/svg"
                 alt="用户头像"
                 fill
                 className="object-cover"
@@ -142,12 +166,61 @@ export default function EditProfilePage({
                 </button>
               </div>
             </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                新密码
+              </label>
+              <input
+                name="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData((prev) => ({
+                    ...prev,
+                    newPassword: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="输入新密码"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                确认新密码
+              </label>
+              <input
+                name="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="再次输入新密码"
+              />
+            </div>
+            {errorMessage && (
+              <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+            )}
           </div>
 
           {/* Hidden Tag Fields */}
           {profile.tags.map((tag) => (
             <input key={tag} type="hidden" name="tags" value={tag} />
           ))}
+
+          {/* Hidden Password Fields */}
+          <input type="hidden" name="newPassword" value={passwordData.newPassword} />
+          <input
+            type="hidden"
+            name="confirmPassword"
+            value={passwordData.confirmPassword}
+          />
 
           {/* Actions */}
           <div className="flex justify-end space-x-4">

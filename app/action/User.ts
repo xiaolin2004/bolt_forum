@@ -149,7 +149,7 @@ export async function Register(
 }
 
 /**
- * Update a user's profile, including tags.
+ * Update a user's profile, including tags and password (no hashing).
  */
 export async function updateProfile(
   userId: number,
@@ -158,6 +158,22 @@ export async function updateProfile(
   const name = formData.get("name")?.toString().trim();
   const phone = formData.get("phone")?.toString().trim();
   const tags = formData.getAll("tags").map((tag) => tag.toString().trim());
+
+  const newPassword = formData.get("newPassword")?.toString().trim();
+  const confirmPassword = formData.get("confirmPassword")?.toString().trim();
+
+  // Validate passwords if provided
+  if (newPassword || confirmPassword) {
+    if (newPassword !== confirmPassword) {
+      throw new Error("New password and confirmation password do not match");
+    }
+    
+    // Update password in the database
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: newPassword },
+    });
+  }
 
   await prisma.$transaction(async (prisma) => {
     // Update user info
@@ -262,6 +278,7 @@ export async function deleteUser(formData: FormData): Promise<void> {
  */
 export async function getInvitationUsers(): Promise<InvitationUser[]> {
   const users = await prisma.user.findMany({
+    where: { user_type_id: 1 },
     select: { id: true, name: true, avatar: true },
   });
 
